@@ -1,7 +1,7 @@
 import {
     View,
     Text,
-    StyleSheet,
+   StyleSheet,
     TouchableOpacity,
     Image,
     FlatList,
@@ -9,48 +9,87 @@ import {
   } from 'react-native';
   
   import { Ionicons } from '@expo/vector-icons';
+  
   import MainLayout from '../components/MainLayout';
   import { SALONS } from '../data/salons';
   
-  export default function FavoritesScreen({ navigation }) {
+  export default function CategoryScreen({ route, navigation }) {
   
-    // demo favorites
-    const favorites = [SALONS[0], SALONS[2], SALONS[4]];
+    const { category } = route.params;
+  
+    const filteredSalons = SALONS.filter(
+      salon =>
+        salon.service.toLowerCase().includes(
+          category.toLowerCase()
+        )
+    );
   
     const renderItem = ({ item }) => (
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.9}
         onPress={() =>
-          navigation.navigate('Salon', { salon: item })
+          navigation.navigate('Salon', {
+            salon: item
+          })
         }
       >
   
-        <Image source={{ uri: item.image }} style={styles.image} />
+        {/* IMAGE */}
+        <View>
   
-        {/* HEART */}
-        <TouchableOpacity style={styles.heart}>
-          <Ionicons name="heart" size={18} color="#EF4444" />
-        </TouchableOpacity>
+          <Image
+            source={{ uri: item.image }}
+            style={styles.image}
+          />
   
-        {/* CONTENT */}
-        <View style={styles.body}>
+          {/* HEART */}
+          <TouchableOpacity style={styles.heart}>
   
-          <Text style={styles.name}>
+            <Ionicons
+              name="heart-outline"
+              size={16}
+              color="#333"
+            />
+  
+          </TouchableOpacity>
+  
+        </View>
+  
+        {/* BODY */}
+        <View style={styles.cardBody}>
+  
+          <Text
+            style={styles.name}
+            numberOfLines={1}
+          >
             {item.name}
           </Text>
   
+          <Text style={styles.service}>
+            {item.service}
+          </Text>
+  
           <View style={styles.row}>
+  
             <Text style={styles.price}>
               ₹{item.price}
             </Text>
   
             <View style={styles.ratingRow}>
-              <Ionicons name="star" size={12} color="#F59E0B" />
+  
+              <Ionicons
+                name="star"
+                size={12}
+                color="#F59E0B"
+              />
+  
               <Text style={styles.rating}>
                 {item.rating}
               </Text>
+  
             </View>
+  
           </View>
   
         </View>
@@ -60,43 +99,55 @@ import {
   
     return (
       <MainLayout navigation={navigation}>
+  
         <SafeAreaView style={styles.container}>
   
           {/* HEADER */}
           <Text style={styles.header}>
-            Favorites
+            {category}
           </Text>
   
-          {/* EMPTY STATE */}
-          {favorites.length === 0 ? (
+          {/* EMPTY */}
+          {filteredSalons.length === 0 ? (
+  
             <View style={styles.empty}>
   
               <Ionicons
-                name="heart-outline"
+                name="search-outline"
                 size={70}
                 color="#C4B5FD"
               />
   
               <Text style={styles.emptyTitle}>
-                No Favorites Yet
+                No salons found
               </Text>
   
               <Text style={styles.emptyText}>
-                Save salons you like to access them quickly.
+                No salons available in this category.
               </Text>
   
             </View>
+  
           ) : (
+  
             <FlatList
-              data={favorites}
-              keyExtractor={(item) => item.id}
+              data={filteredSalons}
               renderItem={renderItem}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={{
+                justifyContent: 'space-between'
+              }}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 120 }}
+              contentContainerStyle={{
+                paddingBottom: 120
+              }}
             />
+  
           )}
   
         </SafeAreaView>
+  
       </MainLayout>
     );
   }
@@ -106,49 +157,62 @@ import {
     container: {
       flex: 1,
       backgroundColor: '#F3F0FF',
-      paddingHorizontal: 20,
+      paddingHorizontal: 15,
+      margin: 20,
+      marginBottom: 0,
     },
   
+    /* HEADER */
     header: {
       fontSize: 24,
       fontWeight: '900',
       marginTop: 10,
       marginBottom: 20,
+      marginLeft: 5,
     },
   
     /* CARD */
     card: {
-      backgroundColor: '#fff',
+      width: '48%',
+      backgroundColor: '#EDEBFF',
       borderRadius: 18,
-      marginBottom: 18,
+      marginBottom: 15,
       overflow: 'hidden',
     },
   
     image: {
       width: '100%',
-      height: 170,
+      height: 120,
     },
   
     heart: {
       position: 'absolute',
-      top: 12,
-      right: 12,
+      top: 8,
+      right: 8,
+      width: 30,
+      height: 30,
+      borderRadius: 15,
       backgroundColor: '#fff',
-      width: 34,
-      height: 34,
-      borderRadius: 17,
       justifyContent: 'center',
       alignItems: 'center',
     },
   
-    body: {
-      padding: 14,
+    cardBody: {
+      padding: 10,
     },
   
     name: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '700',
       marginBottom: 8,
+    },
+  
+    service: {
+      fontSize: 12,
+      color: '#666',
+      marginBottom: 8,
+      marginTop: 4,
+      fontWeight: '500',
     },
   
     row: {
@@ -158,7 +222,7 @@ import {
     },
   
     price: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '700',
       color: '#7C3AED',
     },
@@ -169,8 +233,8 @@ import {
     },
   
     rating: {
-      marginLeft: 4,
-      fontSize: 13,
+      marginLeft: 3,
+      fontSize: 12,
       color: '#555',
     },
   

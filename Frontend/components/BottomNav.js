@@ -9,6 +9,7 @@ export default function BottomNav({ navigation }) {
   const getActiveTab = () => {
     if (route.name === 'Home') return 'home';
     if (route.name === 'Bookings') return 'calendar';
+    if (route.name === 'Notifications') return 'notifications';
     if (route.name === 'Profile') return 'person';
     return '';
   };
@@ -18,7 +19,7 @@ export default function BottomNav({ navigation }) {
   const tabs = [
     { key: 'home', icon: 'home', label: 'Home' },
     { key: 'calendar', icon: 'calendar', label: 'Bookings' },
-    { key: 'sparkles', icon: 'sparkles', label: 'AI' },
+    { key: 'notifications', icon: 'notifications', label: 'Alerts' },
     { key: 'person', icon: 'person', label: 'Profile' },
   ];
 
@@ -28,7 +29,10 @@ export default function BottomNav({ navigation }) {
     } 
     else if (tab.key === 'calendar') {
       navigation.navigate('Bookings');
-    } 
+    }
+    else if (tab.key === 'notifications') {
+      navigation.navigate('Notifications');
+    }
     else if (tab.key === 'person') {
       navigation.navigate('Profile');
     }

@@ -32,11 +32,9 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.brand}>SLOTIFY</Text>
 
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn}
+            onPress={() => navigation.navigate('Favorites')}>
               <Ionicons name="heart-outline" size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={20} />
             </TouchableOpacity>
           </View>
         </View>
@@ -55,7 +53,10 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.categories}>
           {CATEGORIES.map(cat => (
-            <TouchableOpacity key={cat.id} style={styles.catItem}>
+            <TouchableOpacity key={cat.id} style={styles.catItem} 
+            onPress={() =>
+              navigation.navigate('Category', {
+                category: cat.label})}>
               <View style={styles.catIcon}>
                 <MaterialCommunityIcons name={cat.icon} size={22} color="#7C3AED" />
               </View>
@@ -95,11 +96,29 @@ export default function HomeScreen({ navigation }) {
                 </View>
 
                 <View style={styles.cardBody}>
-                  <Text style={styles.name}>{salon.name}</Text>
-
+                  <Text
+                    style={styles.name}
+                    numberOfLines={1}
+                  >
+                    {salon.name}
+                  </Text>
+                  <Text style={styles.service}>
+                    {salon.service}
+                  </Text>
                   <View style={styles.row}>
-                    <Text style={styles.price}>₹{salon.price}</Text>
-                    <Text style={styles.rating}>{salon.rating}</Text>
+                    <Text style={styles.price}>
+                      ₹{salon.price}
+                    </Text>
+                    <View style={styles.ratingRow}>
+                      <Ionicons
+                        name="star"
+                        size={12}
+                        color="#F59E0B"
+                      />
+                      <Text style={styles.rating}>
+                        {salon.rating}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -230,4 +249,23 @@ const styles = StyleSheet.create({
 
   price: { fontSize: 13, fontWeight: '600' },
   rating: { fontSize: 12, color: '#555' },
+  service: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  rating: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: '#555',
+    fontWeight: '600',
+  },
 });

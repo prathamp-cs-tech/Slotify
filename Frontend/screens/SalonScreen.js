@@ -68,7 +68,7 @@ export default function SalonScreen({ route, navigation }) {
             </View>
           </View>
 
-          <Text style={styles.desc}>Professional grooming services</Text>
+          <Text style={styles.desc}>{salon.service}</Text>
 
           {/* LOCATION */}
           <TouchableOpacity
@@ -168,6 +168,42 @@ export default function SalonScreen({ route, navigation }) {
                   </TouchableOpacity>
                 ))}
               </View>
+              <View style={styles.contactRow}>
+                {/* CALL */}
+                <TouchableOpacity
+                  style={styles.contactBtn}
+                  onPress={() =>
+                    Linking.openURL('tel:+919036466958')
+                  }
+                >
+                  <Ionicons
+                    name="call"
+                    size={18}
+                    color="#fff"
+                  />
+                  <Text style={styles.contactText}>
+                    Call
+                  </Text>
+                </TouchableOpacity>
+                {/* WHATSAPP */}
+                <TouchableOpacity
+                  style={styles.whatsappBtn}
+                  onPress={() =>
+                    Linking.openURL(
+                      'https://wa.me/919036466958'
+                    )
+                  }
+                >
+                  <Ionicons
+                    name="logo-whatsapp"
+                    size={18}
+                    color="#fff"
+                  />
+                  <Text style={styles.contactText}>
+                    WhatsApp
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
               {/* BILL */}
               <Text style={styles.section}>Bill Detail</Text>
@@ -182,13 +218,6 @@ export default function SalonScreen({ route, navigation }) {
                 <Text style={styles.submitText}>Submit</Text>
               </TouchableOpacity>
 
-              {/* CANCEL */}
-              <TouchableOpacity
-                style={styles.cancel}
-                onPress={() => navigation.goBack()}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
             </>
           )}
 
@@ -231,7 +260,7 @@ const styles = StyleSheet.create({
 
   rating: { flexDirection: 'row', alignItems: 'center' },
 
-  desc: { color: '#777', marginBottom: 15 },
+  desc: { color: '#777', marginBottom: 15,fontSize: 14,fontWeight: '500',},
 
   locationRow: {
     flexDirection: 'row',
@@ -302,15 +331,6 @@ const styles = StyleSheet.create({
 
   submitText: { color: '#fff', fontWeight: '700' },
 
-  cancel: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 14,
-    borderRadius: 30,
-    alignItems: 'center',
-  },
-
-  cancelText: { color: 'red', fontWeight: '600' },
 
   cancelledText: {
     marginTop: 10,
@@ -349,5 +369,37 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     fontWeight: '700',
+  },
+  contactRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  
+  contactBtn: {
+    flex: 1,
+    height: 48,
+    backgroundColor: '#7C3AED',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  
+  whatsappBtn: {
+    flex: 1,
+    height: 48,
+    backgroundColor: '#22C55E',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  
+  contactText: {
+    color: '#fff',
+    fontWeight: '700',
+    marginLeft: 8,
   },
 });

@@ -49,25 +49,6 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.brand}>
             Provider Home
           </Text>
-
-          <View style={styles.headerIcons}>
-
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() =>
-                navigation.navigate('Favorites')
-              }
-            >
-
-              <Ionicons
-                name="heart-outline"
-                size={20}
-              />
-
-            </TouchableOpacity>
-
-          </View>
-
         </View>
 
         {/* SEARCH */}
@@ -86,48 +67,9 @@ export default function HomeScreen({ navigation }) {
 
         </View>
 
-        {/* CATEGORIES */}
-        <Text style={styles.sectionTitle}>
-          Popular Categories
-        </Text>
-
-        <View style={styles.categories}>
-
-          {CATEGORIES.map(cat => (
-
-            <TouchableOpacity
-              key={cat.id}
-              style={styles.catItem}
-              onPress={() =>
-                navigation.navigate('Category', {
-                  category: cat.label
-                })
-              }
-            >
-
-              <View style={styles.catIcon}>
-
-                <MaterialCommunityIcons
-                  name={cat.icon}
-                  size={22}
-                  color="#7C3AED"
-                />
-
-              </View>
-
-              <Text style={styles.catLabel}>
-                {cat.label}
-              </Text>
-
-            </TouchableOpacity>
-
-          ))}
-
-        </View>
-
         {/* TITLE */}
         <Text style={styles.sectionTitle}>
-          Trending near you
+          Your Salons
         </Text>
 
         {/* GRID */}

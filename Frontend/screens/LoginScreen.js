@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform
+  StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,7 +13,7 @@ export default function LoginScreen({ navigation, route }) {
   const [password, setPassword] = useState('');
 
   return (
-    <KeyboardAvoidingView
+    <SafeAreaView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -73,21 +74,21 @@ export default function LoginScreen({ navigation, route }) {
 
         {/* Login Button */}
         <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() => {
+        style={styles.loginButton}
+        onPress={() => {
 
-            if (role === 'provider') {
-              navigation.navigate('ProviderHome');
-            } else {
-              navigation.navigate('Home');
-            }
+          if (role === 'serviceprovider') {
+            navigation.navigate('ProviderHome');
+          } else {
+            navigation.navigate('Home');
+          }
 
-          }}
-        >
-          <Text style={styles.loginButtonText}>
-            LOGIN
-          </Text>
-        </TouchableOpacity>
+        }}
+      >
+        <Text style={styles.loginButtonText}>
+          LOGIN
+        </Text>
+      </TouchableOpacity>
 
         {/* Signup */}
         <View style={styles.signupRow}>
@@ -98,7 +99,7 @@ export default function LoginScreen({ navigation, route }) {
         </View>
 
       </View>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

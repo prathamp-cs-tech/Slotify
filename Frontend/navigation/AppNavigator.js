@@ -17,6 +17,8 @@ import SignupScreen from '../screens/SignupScreen';
 import ForgotPass from '../screens/ForgotPass';
 import ResetPass from '../screens/ResetPass';
 import ProviderHomeScreen from '../screens/ProviderHomeScreen.js';
+import EditServiceScreen from '../screens/EditServiceScreen.js';
+import Service from '../screens/Service.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +38,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Bookings" component={BookingsScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="EditService" component={EditServiceScreen} />
         <Stack.Screen
           name="Notifications"
           component={NotificationsScreen}
@@ -47,6 +50,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Logout" component={LandingScreen} />
         <Stack.Screen name="ProviderHome" component={ProviderHomeScreen} />
+        <Stack.Screen name="SalonDetails" component={Service} />
       </Stack.Navigator>
     </NavigationContainer>
   );

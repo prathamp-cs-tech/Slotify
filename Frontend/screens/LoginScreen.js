@@ -77,7 +77,7 @@ export default function LoginScreen({ navigation, route }) {
         style={styles.loginButton}
         onPress={() => {
 
-          if (role === 'serviceprovider') {
+          if (role === 'provider') {
             navigation.navigate('ProviderHome');
           } else {
             navigation.navigate('Home');

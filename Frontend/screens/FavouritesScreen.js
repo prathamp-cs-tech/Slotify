@@ -3,17 +3,18 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
+ StyleSheet,
   FlatList,
   SafeAreaView,
-  Modal,
+  TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import MainLayout from '../components/MainLayout';
+import SalonCard from '../components/SalonCard';
+import FilterModal from '../components/FilterModal';
+
 import { SALONS } from '../data/salons';
 
 export default function FavoritesScreen({ navigation }) {
@@ -30,88 +31,13 @@ export default function FavoritesScreen({ navigation }) {
     SALONS[8],
   ];
 
-  const renderItem = ({ item }) => (
-
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.9}
-      onPress={() =>
-        navigation.navigate('Salon', {
-          salon: item
-        })
-      }
-    >
-
-      {/* IMAGE */}
-      <View>
-
-        <Image
-          source={{ uri: item.image }}
-          style={styles.image}
-        />
-
-        {/* HEART */}
-        <TouchableOpacity style={styles.heart}>
-
-          <Ionicons
-            name="heart"
-            size={16}
-            color="#EF4444"
-          />
-
-        </TouchableOpacity>
-
-      </View>
-
-      {/* BODY */}
-      <View style={styles.cardBody}>
-
-        <Text
-          style={styles.name}
-          numberOfLines={1}
-        >
-          {item.name}
-        </Text>
-
-        <Text style={styles.service}>
-          {item.service}
-        </Text>
-
-        <View style={styles.row}>
-
-          <Text style={styles.price}>
-            ₹{item.price}
-          </Text>
-
-          <View style={styles.ratingRow}>
-
-            <Ionicons
-              name="star"
-              size={12}
-              color="#F59E0B"
-            />
-
-            <Text style={styles.rating}>
-              {item.rating}
-            </Text>
-
-          </View>
-
-        </View>
-
-      </View>
-
-    </TouchableOpacity>
-
-  );
-
   return (
 
     <MainLayout navigation={navigation}>
 
       <SafeAreaView style={styles.container}>
 
-        {/* HEADER + FILTER */}
+        {/* HEADER */}
         <View style={styles.topRow}>
 
           <Text style={styles.header}>
@@ -137,7 +63,7 @@ export default function FavoritesScreen({ navigation }) {
 
         </View>
 
-        {/* EMPTY STATE */}
+        {/* EMPTY */}
         {favorites.length === 0 ? (
 
           <View style={styles.empty}>
@@ -162,7 +88,14 @@ export default function FavoritesScreen({ navigation }) {
 
           <FlatList
             data={favorites}
-            renderItem={renderItem}
+            renderItem={({ item }) => (
+
+              <SalonCard
+                salon={item}
+                navigation={navigation}
+              />
+
+            )}
             keyExtractor={(item) => item.id}
             numColumns={2}
             columnWrapperStyle={{
@@ -177,63 +110,18 @@ export default function FavoritesScreen({ navigation }) {
         )}
 
         {/* FILTER MODAL */}
-        <Modal
-          transparent
+        <FilterModal
           visible={showFilters}
-          animationType="fade"
-        >
-
-          <View style={styles.modalOverlay}>
-
-            <View style={styles.filterModal}>
-
-              <Text style={styles.filterTitle}>
-                Filters
-              </Text>
-
-              {[
-                'Haircut',
-                'Spa',
-                'Beard',
-                'Makeup',
-                'Facial'
-              ].map((item) => (
-
-                <TouchableOpacity
-                  key={item}
-                  style={styles.filterOption}
-                >
-
-                  <Ionicons
-                    name="square-outline"
-                    size={22}
-                    color="#7C3AED"
-                  />
-
-                  <Text style={styles.optionText}>
-                    {item}
-                  </Text>
-
-                </TouchableOpacity>
-
-              ))}
-
-              <TouchableOpacity
-                style={styles.applyBtn}
-                onPress={() => setShowFilters(false)}
-              >
-
-                <Text style={styles.applyText}>
-                  Apply Filters
-                </Text>
-
-              </TouchableOpacity>
-
-            </View>
-
-          </View>
-
-        </Modal>
+          onClose={() => setShowFilters(false)}
+          checkedOption=""
+          options={[
+            'Haircut',
+            'Spa',
+            'Beard',
+            'Makeup',
+            'Facial',
+          ]}
+        />
 
       </SafeAreaView>
 
@@ -274,6 +162,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 14,
+    marginTop: 10,
   },
 
   filterText: {
@@ -281,73 +170,6 @@ const styles = StyleSheet.create({
     color: '#7C3AED',
     fontSize: 12,
     fontWeight: '700',
-  },
-
-  /* CARD */
-  card: {
-    width: '48%',
-    backgroundColor: '#EDEBFF',
-    borderRadius: 18,
-    marginBottom: 15,
-    overflow: 'hidden',
-  },
-
-  image: {
-    width: '100%',
-    height: 120,
-  },
-
-  heart: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  cardBody: {
-    padding: 10,
-  },
-
-  name: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-
-  service: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  price: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#7C3AED',
-  },
-
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  rating: {
-    marginLeft: 3,
-    fontSize: 12,
-    color: '#555',
   },
 
   /* EMPTY */
@@ -421,5 +243,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-
 });

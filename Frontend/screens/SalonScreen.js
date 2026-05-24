@@ -1,74 +1,127 @@
 import { useState } from 'react';
+
 import {
-  View, Text, StyleSheet, Image,
-  TouchableOpacity, ScrollView, Linking, Modal
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Linking,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-export default function SalonScreen({ route, navigation }) {
-  const { salon, booking } = route.params || {};
+import PrimaryButton from '../components/PrimaryButton';
+import SuccessModal from '../components/SuccessModal';
+
+export default function SalonScreen({
+  route,
+  navigation,
+}) {
+
+  const { salon } = route.params;
 
   const [selectedTime, setSelectedTime] = useState(null);
+
   const [date, setDate] = useState(new Date());
+
   const [tempDate, setTempDate] = useState(new Date());
+
   const [showPicker, setShowPicker] = useState(false);
+
   const [booked, setBooked] = useState(false);
 
-  const isUpcoming = booking?.status === 'upcoming';
-  const isCompleted = booking?.status === 'completed';
-  const isCancelled = booking?.status === 'cancelled';
-
   const times = [
-    '10:00 am', '10:30 am',
-    '12:00 pm', '12:30 pm',
-    '4:00 pm', '4:30 pm',
-    '5:00 pm', '5:30 pm'
+    '10:00 am',
+    '10:30 am',
+    '12:00 pm',
+    '12:30 pm',
+    '4:00 pm',
+    '4:30 pm',
+    '5:00 pm',
+    '5:30 pm',
   ];
 
   const handleBooking = () => {
+
     if (!selectedTime) return;
 
     setBooked(true);
 
-    setTimeout(() => {
-      setBooked(false);
-      navigation.navigate('Home');
-    }, 1500);
   };
 
-  const onChangeDate = (event, selectedDate) => {
-    if (selectedDate) setTempDate(selectedDate);
+  const onChangeDate = (
+    event,
+    selectedDate
+  ) => {
+
+    if (selectedDate) {
+      setTempDate(selectedDate);
+    }
+
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F3F0FF' }}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+
+    <View style={styles.screen}>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* IMAGE */}
         <View>
-          <Image source={{ uri: salon.image }} style={styles.image} />
+
+          <Image
+            source={{ uri: salon.image }}
+            style={styles.image}
+          />
 
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={20} />
+
+            <Ionicons
+              name="arrow-back"
+              size={20}
+            />
+
           </TouchableOpacity>
+
         </View>
 
+        {/* CONTENT */}
         <View style={styles.container}>
 
           {/* TITLE */}
           <View style={styles.titleRow}>
-            <Text style={styles.title}>{salon.name}</Text>
+
+            <Text style={styles.title}>
+              {salon.name}
+            </Text>
+
             <View style={styles.rating}>
-              <Ionicons name="star" size={14} />
-              <Text style={{ marginLeft: 4 }}>{salon.rating}</Text>
+
+              <Ionicons
+                name="star"
+                size={14}
+              />
+
+              <Text style={styles.ratingText}>
+                {salon.rating}
+              </Text>
+
             </View>
+
           </View>
 
-          <Text style={styles.desc}>{salon.service}</Text>
+          <Text style={styles.desc}>
+            {salon.service}
+          </Text>
 
           {/* LOCATION */}
           <TouchableOpacity
@@ -79,166 +132,208 @@ export default function SalonScreen({ route, navigation }) {
               )
             }
           >
-            <Ionicons name="location-outline" size={18} />
-            <Text style={styles.locationText}>BMSCE Bangalore</Text>
+
+            <Ionicons
+              name="location-outline"
+              size={18}
+            />
+
+            <Text style={styles.locationText}>
+              BMSCE Bangalore
+            </Text>
+
           </TouchableOpacity>
 
-          {/* UPCOMING */}
-          {isUpcoming && (
-            <View>
-              <Text style={styles.section}>Your Booking</Text>
-              <Text>Date: {booking.date}</Text>
-              <Text>Time: {booking.time}</Text>
-            </View>
-          )}
+          {/* DATE */}
+          <Text style={styles.section}>
+            Date
+          </Text>
 
-          {/* CANCELLED */}
-          {isCancelled && (
-            <View style={styles.center}>
-              <Ionicons name="close-circle" size={70} color="red" />
-              <Text style={styles.cancelledText}>Booking Cancelled</Text>
-            </View>
-          )}
+          <TouchableOpacity
+            style={styles.dateBox}
+            onPress={() => setShowPicker(true)}
+          >
 
-          {/* COMPLETED */}
-          {isCompleted && (
-            <TouchableOpacity
-              style={styles.submit}
-              onPress={() => navigation.replace('Salon', { salon })}
-            >
-              <Text style={styles.submitText}>Book Again</Text>
-            </TouchableOpacity>
-          )}
+            <Text style={styles.dateText}>
+              {date.toDateString()}
+            </Text>
 
-          {/* NORMAL BOOKING */}
-          {!booking && (
-            <>
-              {/* DATE */}
-              <Text style={styles.section}>Date</Text>
+          </TouchableOpacity>
+
+          {/* DATE PICKER */}
+          {showPicker && (
+
+            <View style={styles.pickerWrapper}>
+
+              <DateTimePicker
+                value={tempDate}
+                mode="date"
+                display="spinner"
+                onChange={onChangeDate}
+              />
 
               <TouchableOpacity
-                style={styles.dateBox}
-                onPress={() => setShowPicker(true)}
+                style={styles.tickBtn}
+                onPress={() => {
+                  setDate(tempDate);
+                  setShowPicker(false);
+                }}
               >
-                <Text style={styles.dateText}>
-                  {date.toDateString()}
-                </Text>
+
+                <Ionicons
+                  name="checkmark"
+                  size={24}
+                  color="#fff"
+                />
+
               </TouchableOpacity>
 
-              {showPicker && (
-                <View style={styles.pickerWrapper}>
-                  <DateTimePicker
-                    value={tempDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={onChangeDate}
-                  />
+            </View>
 
-                  <TouchableOpacity
-                    style={styles.tickBtn}
-                    onPress={() => {
-                      setDate(tempDate);
-                      setShowPicker(false);
-                    }}
-                  >
-                    <Ionicons name="checkmark" size={24} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {/* TIMES */}
-              <Text style={styles.section}>Available times</Text>
-
-              <View style={styles.timeGrid}>
-                {times.map((t) => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[
-                      styles.timeBtn,
-                      selectedTime === t && styles.activeTime
-                    ]}
-                    onPress={() => setSelectedTime(t)}
-                  >
-                    <Text style={[
-                      styles.timeText,
-                      selectedTime === t && styles.activeTimeText
-                    ]}>
-                      {t}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View style={styles.contactRow}>
-                {/* CALL */}
-                <TouchableOpacity
-                  style={styles.contactBtn}
-                  onPress={() =>
-                    Linking.openURL('tel:+919036466958')
-                  }
-                >
-                  <Ionicons
-                    name="call"
-                    size={18}
-                    color="#fff"
-                  />
-                  <Text style={styles.contactText}>
-                    Call
-                  </Text>
-                </TouchableOpacity>
-                {/* WHATSAPP */}
-                <TouchableOpacity
-                  style={styles.whatsappBtn}
-                  onPress={() =>
-                    Linking.openURL(
-                      'https://wa.me/919036466958'
-                    )
-                  }
-                >
-                  <Ionicons
-                    name="logo-whatsapp"
-                    size={18}
-                    color="#fff"
-                  />
-                  <Text style={styles.contactText}>
-                    WhatsApp
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* BILL */}
-              <Text style={styles.section}>Bill Detail</Text>
-
-              <View style={styles.billRow}>
-                <Text>Service Amount</Text>
-                <Text style={styles.billAmount}>₹{salon.price}</Text>
-              </View>
-
-              {/* SUBMIT */}
-              <TouchableOpacity style={styles.submit} onPress={handleBooking}>
-                <Text style={styles.submitText}>Submit</Text>
-              </TouchableOpacity>
-
-            </>
           )}
 
+          {/* TIMES */}
+          <Text style={styles.section}>
+            Available times
+          </Text>
+
+          <View style={styles.timeGrid}>
+
+            {times.map((t) => (
+
+              <TouchableOpacity
+                key={t}
+                style={[
+                  styles.timeBtn,
+
+                  selectedTime === t &&
+                    styles.activeTime,
+                ]}
+                onPress={() =>
+                  setSelectedTime(t)
+                }
+              >
+
+                <Text
+                  style={[
+                    styles.timeText,
+
+                    selectedTime === t &&
+                      styles.activeTimeText,
+                  ]}
+                >
+                  {t}
+                </Text>
+
+              </TouchableOpacity>
+
+            ))}
+
+          </View>
+
+          {/* CONTACT */}
+          <View style={styles.contactRow}>
+
+            {/* CALL */}
+            <TouchableOpacity
+              style={styles.contactBtn}
+              onPress={() =>
+                Linking.openURL(
+                  'tel:+919036466958'
+                )
+              }
+            >
+
+              <Ionicons
+                name="call"
+                size={18}
+                color="#fff"
+              />
+
+              <Text style={styles.contactText}>
+                Call
+              </Text>
+
+            </TouchableOpacity>
+
+            {/* WHATSAPP */}
+            <TouchableOpacity
+              style={styles.whatsappBtn}
+              onPress={() =>
+                Linking.openURL(
+                  'https://wa.me/919036466958'
+                )
+              }
+            >
+
+              <Ionicons
+                name="logo-whatsapp"
+                size={18}
+                color="#fff"
+              />
+
+              <Text style={styles.contactText}>
+                WhatsApp
+              </Text>
+
+            </TouchableOpacity>
+
+          </View>
+
+          {/* BILL */}
+          <Text style={styles.section}>
+            Bill Detail
+          </Text>
+
+          <View style={styles.billRow}>
+
+            <Text>
+              Service Amount
+            </Text>
+
+            <Text style={styles.billAmount}>
+              ₹{salon.price}
+            </Text>
+
+          </View>
+
+          {/* SUBMIT */}
+          <PrimaryButton
+            title="Submit"
+            onPress={handleBooking}
+          />
+
+          <View style={{ height: 20 }} />
+
         </View>
+
       </ScrollView>
 
-      {/* MODAL */}
-      <Modal transparent visible={booked} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Ionicons name="checkmark-circle" size={70} color="#7C3AED" />
-            <Text style={styles.modalText}>Booking Confirmed</Text>
-          </View>
-        </View>
-      </Modal>
+      {/* SUCCESS MODAL */}
+      <SuccessModal
+        visible={booked}
+        title="Booking Confirmed"
+        onClose={() => {
+          setBooked(false);
+        }}
+      />
+
     </View>
+
   );
 }
 
 const styles = StyleSheet.create({
-  image: { width: '100%', height: 220 },
+
+  screen: {
+    flex: 1,
+    backgroundColor: '#F3F0FF',
+  },
+
+  image: {
+    width: '100%',
+    height: 220,
+  },
 
   backBtn: {
     position: 'absolute',
@@ -249,18 +344,35 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
-  container: { padding: 20 },
+  container: {
+    padding: 20,
+  },
 
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
 
-  title: { fontSize: 22, fontWeight: '800' },
+  title: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
 
-  rating: { flexDirection: 'row', alignItems: 'center' },
+  rating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 
-  desc: { color: '#777', marginBottom: 15,fontSize: 14,fontWeight: '500',},
+  ratingText: {
+    marginLeft: 4,
+  },
+
+  desc: {
+    color: '#777',
+    marginBottom: 15,
+    fontSize: 14,
+    fontWeight: '500',
+  },
 
   locationRow: {
     flexDirection: 'row',
@@ -288,9 +400,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  dateText: { fontWeight: '600' },
+  dateText: {
+    fontWeight: '600',
+  },
 
-  pickerWrapper: { alignItems: 'center' },
+  pickerWrapper: {
+    alignItems: 'center',
+  },
+
+  tickBtn: {
+    backgroundColor: '#7C3AED',
+    padding: 10,
+    borderRadius: 20,
+    marginTop: 10,
+  },
 
   timeGrid: {
     flexDirection: 'row',
@@ -307,75 +430,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  activeTime: { backgroundColor: '#7C3AED' },
-
-  activeTimeText: { color: '#fff' },
-
-  timeText: { fontSize: 13 },
-
-  billRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-
-  billAmount: { fontWeight: '600' },
-
-  submit: {
+  activeTime: {
     backgroundColor: '#7C3AED',
-    padding: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginBottom: 15,
   },
 
-  submitText: { color: '#fff', fontWeight: '700' },
-
-
-  cancelledText: {
-    marginTop: 10,
-    fontWeight: '700',
-    color: 'red',
+  activeTimeText: {
+    color: '#fff',
   },
 
-  center: {
-    alignItems: 'center',
-    marginTop: 30,
+  timeText: {
+    fontSize: 13,
   },
 
-  tickBtn: {
-    backgroundColor: '#7C3AED',
-    padding: 10,
-    borderRadius: 20,
-    marginTop: 10,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  modalBox: {
-    backgroundColor: '#fff',
-    padding: 30,
-    borderRadius: 20,
-    alignItems: 'center',
-    width: '70%',
-  },
-
-  modalText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: '700',
-  },
   contactRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    marginTop: 10,
   },
-  
+
   contactBtn: {
     flex: 1,
     height: 48,
@@ -386,7 +459,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginRight: 8,
   },
-  
+
   whatsappBtn: {
     flex: 1,
     height: 48,
@@ -396,10 +469,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
   },
-  
+
   contactText: {
     color: '#fff',
     fontWeight: '700',
     marginLeft: 8,
   },
+
+  billRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+
+  billAmount: {
+    fontWeight: '600',
+  },
+
 });

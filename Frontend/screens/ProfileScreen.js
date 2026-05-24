@@ -12,7 +12,7 @@ import {
   import { Ionicons } from '@expo/vector-icons';
   import MainLayout from '../components/MainLayout';
   import { useState } from 'react';
-  
+  import PrimaryButton from '../components/PrimaryButton';
   export default function ProfileScreen({ navigation }) {
   
     const [notifications, setNotifications] = useState(true);  
@@ -238,19 +238,17 @@ import {
             </View>
   
             {/* LOGOUT */}
-            <TouchableOpacity style={styles.logoutBtn}>
-  
-              <Ionicons
-                name="log-out-outline"
-                size={20}
-                color="#fff"
+            <View style={styles.logoutWrapper}>
+
+              <PrimaryButton
+                title="Logout"
+                bordered
+                backgroundColor="#EF4444"
+                textColor="#EF4444"
+                onPress={() => {}}
               />
-  
-              <Text style={styles.logoutText}>
-                Logout
-              </Text>
-  
-            </TouchableOpacity>
+
+            </View>
   
           </ScrollView>
   
@@ -353,23 +351,9 @@ import {
       marginHorizontal: 18,
     },
   
-    /* LOGOUT */
-    logoutBtn: {
-      backgroundColor: '#7C3AED',
+    logoutWrapper: {
       marginHorizontal: 20,
-      height: 55,
-      borderRadius: 30,
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'row',
       marginTop: 10,
-    },
-  
-    logoutText: {
-      color: '#fff',
-      fontWeight: '700',
-      marginLeft: 8,
-      fontSize: 15,
     },
   
   });

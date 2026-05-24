@@ -13,34 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import MainLayout from '../components/MainLayout';
+import PrimaryButton from '../components/PrimaryButton';
+import SuccessModal from '../components/SuccessModal';
 import { SALONS } from '../data/salons';
-
-const BOOKINGS = [
-  {
-    id: '1',
-    salonId: '1',
-    service: 'Haircut',
-    date: '20 Apr 2026',
-    time: '4:30 PM',
-    status: 'upcoming',
-  },
-  {
-    id: '2',
-    salonId: '2',
-    service: 'Facial',
-    date: '15 Apr 2026',
-    time: '2:00 PM',
-    status: 'completed',
-  },
-  {
-    id: '3',
-    salonId: '4',
-    service: 'Beard Trim',
-    date: '10 Apr 2026',
-    time: '6:00 PM',
-    status: 'cancelled',
-  },
-];
+import { BOOKINGS } from '../data/bookings';
 
 export default function BookingsScreen({ navigation }) {
 
@@ -108,16 +84,12 @@ export default function BookingsScreen({ navigation }) {
         {/* COMPLETED */}
         {item.status === 'completed' && (
 
-          <TouchableOpacity
-            style={styles.bookAgainBtn}
-            onPress={() =>
-              navigation.navigate('Salon', { salon })
-            }
-          >
-            <Text style={styles.bookAgainText}>
-              Book Again
-            </Text>
-          </TouchableOpacity>
+          <PrimaryButton
+          title="Book Again"
+          onPress={() =>
+            navigation.navigate('Salon', { salon })
+          }
+          />
 
         )}
 
@@ -125,27 +97,23 @@ export default function BookingsScreen({ navigation }) {
         {item.status === 'upcoming' && (
           <>
 
-            <TouchableOpacity
-              style={styles.navigateBtn}
+            
+            <PrimaryButton
+              title="Navigate"
               onPress={() =>
                 Linking.openURL(
                   'https://maps.google.com/?q=BMS+College+of+Engineering+Bangalore'
                 )
               }
-            >
-              <Text style={styles.navigateText}>
-                Navigate
-              </Text>
-            </TouchableOpacity>
+            />
 
-            <TouchableOpacity
-              style={styles.cancelBtn}
+            <PrimaryButton
+              title="Cancel Booking"
+              bordered
+              backgroundColor="red"
+              textColor="red"
               onPress={() => setShowCancelPopup(true)}
-            >
-              <Text style={styles.cancelText}>
-                Cancel Booking
-              </Text>
-            </TouchableOpacity>
+            />
 
           </>
         )}
@@ -206,40 +174,11 @@ export default function BookingsScreen({ navigation }) {
         />
 
         {/* POPUP */}
-        <Modal
-          transparent
+        <SuccessModal
           visible={showCancelPopup}
-          animationType="fade"
-        >
-
-          <View style={styles.modalOverlay}>
-
-            <View style={styles.modalBox}>
-
-              <Ionicons
-                name="checkmark-circle"
-                size={70}
-                color="#7C3AED"
-              />
-
-              <Text style={styles.modalText}>
-                Cancellation Requested
-              </Text>
-
-              <TouchableOpacity
-                style={styles.okBtn}
-                onPress={() => setShowCancelPopup(false)}
-              >
-                <Text style={styles.okText}>
-                  OK
-                </Text>
-              </TouchableOpacity>
-
-            </View>
-
-          </View>
-
-        </Modal>
+          title="Cancellation Requested"
+          onClose={() => setShowCancelPopup(false)}
+        />
 
       </SafeAreaView>
 

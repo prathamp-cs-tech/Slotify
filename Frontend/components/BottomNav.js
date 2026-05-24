@@ -1,16 +1,18 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
+import { COLORS } from '../constants/colors';
 
 export default function BottomNav({ navigation }) {
 
-  const route = useRoute(); 
+  const route = useRoute();
 
   const getActiveTab = () => {
     if (route.name === 'Home') return 'home';
     if (route.name === 'Bookings') return 'calendar';
     if (route.name === 'Notifications') return 'notifications';
     if (route.name === 'Profile') return 'person';
+
     return '';
   };
 
@@ -19,23 +21,19 @@ export default function BottomNav({ navigation }) {
   const tabs = [
     { key: 'home', icon: 'home', label: 'Home' },
     { key: 'calendar', icon: 'calendar', label: 'Bookings' },
-    { key: 'notifications', icon: 'notifications', label: 'Alerts' },
+    {
+      key: 'notifications',
+      icon: 'notifications',
+      label: 'Updates',
+    },
     { key: 'person', icon: 'person', label: 'Profile' },
   ];
 
   const handlePress = (tab) => {
-    if (tab.key === 'home') {
-      navigation.navigate('Home');
-    } 
-    else if (tab.key === 'calendar') {
-      navigation.navigate('Bookings');
-    }
-    else if (tab.key === 'notifications') {
-      navigation.navigate('Notifications');
-    }
-    else if (tab.key === 'person') {
-      navigation.navigate('Profile');
-    }
+    if (tab.key === 'home') navigation.navigate('Home');
+    else if (tab.key === 'calendar') navigation.navigate('Bookings');
+    else if (tab.key === 'notifications') navigation.navigate('Notifications');
+    else if (tab.key === 'person') navigation.navigate('Profile');
   };
 
   return (
@@ -53,13 +51,17 @@ export default function BottomNav({ navigation }) {
                 : `${tab.icon}-outline`
             }
             size={24}
-            color={activeTab === tab.key ? '#7C3AED' : '#999'}
+            color={
+              activeTab === tab.key
+                ? COLORS.primary
+                : COLORS.lightGray
+            }
           />
 
           <Text
             style={[
               styles.navLabel,
-              activeTab === tab.key && styles.navLabelActive
+              activeTab === tab.key && styles.activeLabel,
             ]}
           >
             {tab.label}
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
   nav: {
     height: 80,
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     justifyContent: 'space-around',
@@ -89,11 +91,11 @@ const styles = StyleSheet.create({
   navLabel: {
     fontSize: 10,
     marginTop: 3,
-    color: '#999',
+    color: COLORS.lightGray,
   },
 
-  navLabelActive: {
-    color: '#7C3AED',
-    fontWeight: '600',
+  activeLabel: {
+    color: COLORS.primary,
+    fontWeight: '700',
   },
 });

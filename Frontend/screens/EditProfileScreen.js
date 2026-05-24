@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
-
+import PrimaryButton from '../components/PrimaryButton';
+import SuccessModal from '../components/SuccessModal';
 export default function EditProfileScreen({ navigation }) {
 
   const [saved, setSaved] = useState(false);
@@ -157,45 +158,22 @@ export default function EditProfileScreen({ navigation }) {
         </View>
 
         {/* BUTTON */}
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={handleSave}
-        >
-
-          <Text style={styles.saveText}>
-            Save Changes
-          </Text>
-
-        </TouchableOpacity>
+        <PrimaryButton
+          title="Save Changes"
+          onPress={() => setSaved(true)}
+        />
 
       </ScrollView>
 
       {/* SUCCESS MODAL */}
-      <Modal
-        transparent
+      <SuccessModal
         visible={saved}
-        animationType="fade"
-      >
-
-        <View style={styles.modalOverlay}>
-
-          <View style={styles.modalBox}>
-
-            <Ionicons
-              name="checkmark-circle"
-              size={72}
-              color="#7C3AED"
-            />
-
-            <Text style={styles.modalText}>
-              Profile Updated
-            </Text>
-
-          </View>
-
-        </View>
-
-      </Modal>
+        title="Profile Updated"
+        onClose={() => {
+          setSaved(false);
+          navigation.goBack();
+        }}
+      />
 
     </SafeAreaView>
 

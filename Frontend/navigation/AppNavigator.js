@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import Login from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SalonScreen from '../screens/SalonScreen';
 import FavoritesScreen from '../screens/FavouritesScreen';
@@ -11,6 +12,8 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import HelpCenterScreen from '../screens/HelpCenterScreen';
 import TermsScreen from '../screens/TermsScreen';
+import LandingScreen from '../screens/LandingScreen';
+import SignupScreen from '../screens/SignupScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +21,8 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Salon" component={SalonScreen} />
         <Stack.Screen name="Favorites" component={FavoritesScreen} />
@@ -34,6 +39,7 @@ export default function AppNavigator() {
           component={HelpCenterScreen}
         />
         <Stack.Screen name="Terms" component={TermsScreen} />
+        <Stack.Screen name="Logout" component={LandingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

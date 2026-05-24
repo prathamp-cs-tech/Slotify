@@ -57,7 +57,7 @@ export default function SalonScreen({
     event,
     selectedDate
   ) => {
-
+    setShowPicker(false);
     if (selectedDate) {
       setTempDate(selectedDate);
     }

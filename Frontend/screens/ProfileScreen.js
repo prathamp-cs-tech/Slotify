@@ -245,7 +245,7 @@ import {
                 bordered
                 backgroundColor="#EF4444"
                 textColor="#EF4444"
-                onPress={() => {}}
+                onPress={() => { navigation.navigate('Logout') }}
               />
 
             </View>

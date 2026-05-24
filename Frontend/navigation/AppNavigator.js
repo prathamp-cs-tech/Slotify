@@ -14,6 +14,9 @@ import HelpCenterScreen from '../screens/HelpCenterScreen';
 import TermsScreen from '../screens/TermsScreen';
 import LandingScreen from '../screens/LandingScreen';
 import SignupScreen from '../screens/SignupScreen';
+import ForgotPass from '../screens/ForgotPass';
+import ResetPass from '../screens/ResetPass';
+import ProviderHomeScreen from '../screens/ProviderHomeScreen.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +27,8 @@ export default function AppNavigator() {
         <Stack.Screen name="Landing" component={LandingScreen} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="Forgot" component={ForgotPass} />
+        <Stack.Screen name="Reset" component={ResetPass} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Salon" component={SalonScreen} />
         <Stack.Screen name="Favorites" component={FavoritesScreen} />
@@ -41,6 +46,7 @@ export default function AppNavigator() {
         />
         <Stack.Screen name="Terms" component={TermsScreen} />
         <Stack.Screen name="Logout" component={LandingScreen} />
+        <Stack.Screen name="ProviderHome" component={ProviderHomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

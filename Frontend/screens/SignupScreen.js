@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SignupScreen({ navigation }) {
+export default function SignupScreen({ navigation, route }) {
+  const { role } = route.params || {};
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
@@ -57,7 +58,7 @@ export default function SignupScreen({ navigation }) {
         {/* Signup Button */}
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate('Login', { role })}
         >
           <Text style={styles.buttonText}>SIGN UP</Text>
         </TouchableOpacity>
@@ -65,7 +66,7 @@ export default function SignupScreen({ navigation }) {
         {/* Back to Login */}
         <View style={styles.row}>
           <Text style={{ fontSize: 13 }}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Login', { role })}>
             <Text style={styles.link}>Login</Text>
           </TouchableOpacity>
         </View>

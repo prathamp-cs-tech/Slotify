@@ -34,15 +34,17 @@ export default function LandingScreen({ navigation }) {
         <Text style={styles.heading}>Your time. Your schedule.</Text>
         <Text style={styles.subText}>Book smarter, live better.</Text>
   
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Login', {role: 'customer'})}>
           <LinearGradient colors={['#7B6CFF', '#5A4DFF']} style={styles.button}>
             <Text style={styles.buttonText}>LOGIN / SIGN UP</Text>
           </LinearGradient>
         </TouchableOpacity>
-  
-        <Text style={styles.footer}>
-          Are you a service provider? <Text style={styles.link}>Sign up here</Text>
-        </Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Login', {role: 'provider'})}>
+          <Text style={styles.footer}>
+            Are you a service provider? <Text style={styles.link}>Sign up here</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
   
     </View>

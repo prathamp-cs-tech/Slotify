@@ -74,6 +74,7 @@ export default function BottomNav({ navigation }) {
 
 const styles = StyleSheet.create({
   nav: {
+    paddingTop: 10,
     height: 80,
     flexDirection: 'row',
     backgroundColor: COLORS.white,

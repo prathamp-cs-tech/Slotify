@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
 
@@ -27,8 +27,9 @@ export default function CategoryScreen({
 
   const salons = SALONS.filter(
     item =>
-      item.service?.toLowerCase() ===
+      item.service?.toLowerCase().includes(
       category?.toLowerCase()
+    )
   );
 
   return (

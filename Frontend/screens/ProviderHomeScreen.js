@@ -47,7 +47,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.header}>
 
           <Text style={styles.brand}>
-            SLOTIFY
+            Provider Home
           </Text>
 
           <View style={styles.headerIcons}>

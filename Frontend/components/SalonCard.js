@@ -8,9 +8,10 @@ import {
   
   import { Ionicons } from '@expo/vector-icons';
   import { COLORS } from '../constants/colors';
+  import { useState } from 'react';
   
   export default function SalonCard({ salon, navigation }) {
-  
+    const [liked, setLiked] = useState(false);
     return (
       <TouchableOpacity
         style={styles.card}
@@ -27,11 +28,11 @@ import {
             style={styles.image}
           />
   
-          <TouchableOpacity style={styles.heart}>
+          <TouchableOpacity style={styles.heart} onPress={() => setLiked(!liked)}>
             <Ionicons
-              name="heart-outline"
+              name={liked ? "heart" : "heart-outline"}
               size={16}
-              color="#333"
+              color={liked ? COLORS.primary : "#333"}
             />
           </TouchableOpacity>
         </View>

@@ -84,12 +84,41 @@ export default function BookingsScreen({ navigation }) {
         {/* COMPLETED */}
         {item.status === 'completed' && (
 
-          <PrimaryButton
-          title="Book Again"
-          onPress={() =>
-            navigation.navigate('Salon', { salon })
-          }
-          />
+          <View>
+
+            <PrimaryButton
+              title="Book Again"
+              onPress={() =>
+                navigation.navigate('Salon', { salon })
+              }
+            />
+
+            <Text style={styles.rateText}>
+              Rate your experience
+            </Text>
+
+            <View style={styles.starsRow}>
+
+              {[1, 2, 3, 4, 5].map((star) => (
+
+                <TouchableOpacity
+                  key={star}
+                >
+
+                  <Ionicons
+                    name="star-outline"
+                    size={24}
+                    color="#F4B400"
+
+                  />
+
+                </TouchableOpacity>
+
+              ))}
+
+            </View>
+
+          </View>
 
         )}
 
@@ -344,6 +373,21 @@ const styles = StyleSheet.create({
     color: '#7C3AED',
     fontWeight: '700',
     fontSize: 15,
+  },
+
+  rateText: {
+  textAlign: 'center',
+  marginTop: 16,
+  marginBottom: 8,
+  fontSize: 15,
+  fontWeight: '600',
+  color: '#333',
+  },
+
+  starsRow: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
 
 });

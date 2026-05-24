@@ -5,9 +5,10 @@ import {
     TouchableOpacity,
     Image,
     ScrollView,
-    SafeAreaView,
     Switch,
   } from 'react-native';
+
+  import { SafeAreaView } from 'react-native-safe-area-context';
   
   import { Ionicons } from '@expo/vector-icons';
   import MainLayout from '../components/MainLayout';
@@ -24,7 +25,7 @@ import {
   
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: 20 }}
           >
   
             {/* TOP SECTION */}
@@ -245,7 +246,7 @@ import {
                 bordered
                 backgroundColor="#EF4444"
                 textColor="#EF4444"
-                onPress={() => {}}
+                onPress={() => { navigation.navigate('Logout') }}
               />
 
             </View>

@@ -28,8 +28,6 @@ export default function SalonScreen({
 
   const [date, setDate] = useState(new Date());
 
-  const [tempDate, setTempDate] = useState(new Date());
-
   const [showPicker, setShowPicker] = useState(false);
 
   const [booked, setBooked] = useState(false);
@@ -56,13 +54,12 @@ export default function SalonScreen({
   const onChangeDate = (
     event,
     selectedDate
-  ) => {
-
+    ) => {
+    setShowPicker(false);
     if (selectedDate) {
-      setTempDate(selectedDate);
+        setDate(selectedDate);
     }
-
-  };
+};
 
   return (
 
@@ -166,27 +163,11 @@ export default function SalonScreen({
             <View style={styles.pickerWrapper}>
 
               <DateTimePicker
-                value={tempDate}
+                value={date}
                 mode="date"
                 display="spinner"
                 onChange={onChangeDate}
               />
-
-              <TouchableOpacity
-                style={styles.tickBtn}
-                onPress={() => {
-                  setDate(tempDate);
-                  setShowPicker(false);
-                }}
-              >
-
-                <Ionicons
-                  name="checkmark"
-                  size={24}
-                  color="#fff"
-                />
-
-              </TouchableOpacity>
 
             </View>
 

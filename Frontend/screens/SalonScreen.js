@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import API from '../services/api';
 
 import {
   View,
@@ -43,12 +44,27 @@ export default function SalonScreen({
     '5:30 pm',
   ];
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
 
     if (!selectedTime) return;
-
-    setBooked(true);
-
+  
+    try {
+  
+      await API.post('/bookings', {
+        salonId: salon._id,
+        date: date.toDateString(),
+        time: selectedTime,
+        status: 'upcoming',
+      });
+  
+      setBooked(true);
+  
+    } catch (error) {
+  
+      console.log(error);
+  
+    }
+  
   };
 
   const onChangeDate = (

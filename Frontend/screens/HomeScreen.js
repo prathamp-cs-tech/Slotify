@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useRef, useEffect } from 'react';
 
 import {
   View,
@@ -9,6 +8,8 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 
 import {
@@ -19,31 +20,82 @@ import {
 import MainLayout from '../components/MainLayout';
 import SalonCard from '../components/SalonCard';
 
-import { SALONS } from '../data/salons';
 import { CATEGORIES } from '../data/categories';
+import { COLORS } from '../constants/colors';
+
+import API from '../services/api';
+
+import useFavorites from '../hooks/useFavorites';
+
 export default function HomeScreen({ navigation }) {
 
-  const [favorites, setFavorites] = useState({});
+  const [salons, setSalons] = useState([]);
 
-  const toggleFav = (id) => {
-    setFavorites(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const [loading, setLoading] = useState(true);
+
+  const {
+    favorites,
+    toggleFav,
+  } = useFavorites();
+
+  const slideAnim = useRef(
+    new Animated.Value(-120)
+  ).current;
+
+  useEffect(() => {
+
+    Animated.loop(
+
+      Animated.timing(slideAnim, {
+
+        toValue: 320,
+        duration: 1200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+
+      })
+
+    ).start();
+
+  }, []);
+
+  useEffect(() => {
+
+    const fetchSalons = async () => {
+
+      try {
+
+        const response = await API.get('/salons');
+
+        setSalons(response.data);
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    fetchSalons();
+
+  }, []);
 
   return (
 
     <MainLayout navigation={navigation}>
 
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
 
         <StatusBar
           barStyle="dark-content"
-          backgroundColor="#F7F5FF"
+          backgroundColor={COLORS.background}
         />
 
-        {/* HEADER */}
         <View style={styles.header}>
 
           <Text style={styles.brand}>
@@ -62,6 +114,7 @@ export default function HomeScreen({ navigation }) {
               <Ionicons
                 name="heart-outline"
                 size={20}
+                color={COLORS.text}
               />
 
             </TouchableOpacity>
@@ -70,23 +123,22 @@ export default function HomeScreen({ navigation }) {
 
         </View>
 
-        {/* SEARCH */}
         <View style={styles.searchBar}>
 
           <Ionicons
             name="search-outline"
             size={18}
-            color="#999"
+            color={COLORS.lightGray}
           />
 
           <TextInput
             placeholder="Search Salon, Specialist"
+            placeholderTextColor={COLORS.lightGray}
             style={styles.searchInput}
           />
 
         </View>
 
-        {/* CATEGORIES */}
         <Text style={styles.sectionTitle}>
           Popular Categories
         </Text>
@@ -100,7 +152,7 @@ export default function HomeScreen({ navigation }) {
               style={styles.catItem}
               onPress={() =>
                 navigation.navigate('Category', {
-                  category: cat.label
+                  category: cat.label,
                 })
               }
             >
@@ -110,7 +162,7 @@ export default function HomeScreen({ navigation }) {
                 <MaterialCommunityIcons
                   name={cat.icon}
                   size={22}
-                  color="#7C3AED"
+                  color={COLORS.primary}
                 />
 
               </View>
@@ -125,63 +177,89 @@ export default function HomeScreen({ navigation }) {
 
         </View>
 
-        {/* TITLE */}
         <Text style={styles.sectionTitle}>
           Trending near you
         </Text>
 
-        {/* GRID */}
         <ScrollView
           showsVerticalScrollIndicator={false}
         >
 
-          <View style={styles.grid}>
+          {loading ? (
 
-            {SALONS.map((salon) => (
+            <View style={styles.loaderContainer}>
 
-              <SalonCard
-                key={salon.id}
-                salon={salon}
-                navigation={navigation}
-                favorites={favorites}
-                toggleFav={toggleFav}
-              />
+              <View style={styles.loaderTrack}>
 
-            ))}
+                <Animated.View
+                  style={[
+                    styles.loaderBar,
+                    {
+                      transform: [
+                        {
+                          translateX: slideAnim,
+                        },
+                      ],
+                    },
+                  ]}
+                />
 
-          </View>
+              </View>
+
+            </View>
+
+          ) : (
+
+            <View style={styles.grid}>
+
+              {salons.map((salon) => (
+
+                <SalonCard
+                  key={salon._id}
+                  salon={salon}
+                  navigation={navigation}
+                  favorites={favorites}
+                  toggleFav={toggleFav}
+                />
+
+              ))}
+
+            </View>
+
+          )}
 
           <View style={{ height: 100 }} />
 
         </ScrollView>
 
-      </SafeAreaView>
+      </View>
 
     </MainLayout>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   safe: {
     flex: 1,
-    backgroundColor: '#F7F5FF',
+    backgroundColor: COLORS.background,
+    paddingTop: 8,
   },
 
-  /* HEADER */
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginTop: 15,
+    marginTop: 10,
     marginBottom: 15,
   },
 
   brand: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#6D28D9',
+    color: COLORS.primary,
     letterSpacing: 3,
   },
 
@@ -194,15 +272,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  /* SEARCH */
   searchBar: {
     flexDirection: 'row',
-    backgroundColor: '#EDEBFF',
+    backgroundColor: COLORS.card,
     marginHorizontal: 20,
     borderRadius: 12,
     padding: 12,
@@ -213,17 +290,17 @@ const styles = StyleSheet.create({
   searchInput: {
     marginLeft: 10,
     flex: 1,
+    color: COLORS.text,
   },
 
-  /* SECTION */
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 20,
     marginBottom: 10,
+    color: COLORS.text,
   },
 
-  /* CATEGORIES */
   categories: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -239,7 +316,7 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 14,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: COLORS.card,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -251,12 +328,31 @@ const styles = StyleSheet.create({
     color: '#444',
   },
 
-  /* GRID */
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 15,
     justifyContent: 'space-between',
+  },
+
+  loaderContainer: {
+    marginTop: 50,
+    alignItems: 'center',
+  },
+
+  loaderTrack: {
+    width: '85%',
+    height: 5,
+    backgroundColor: '#E9D5FF',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  loaderBar: {
+    width: 120,
+    height: 5,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
   },
 
 });

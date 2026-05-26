@@ -1,43 +1,68 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useCallback } from 'react';
 
 import {
   View,
   Text,
- StyleSheet,
+  StyleSheet,
   FlatList,
   TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import { useFocusEffect } from '@react-navigation/native';
+
 import MainLayout from '../components/MainLayout';
 import SalonCard from '../components/SalonCard';
 import FilterModal from '../components/FilterModal';
 
-import { SALONS } from '../data/salons';
+import API from '../services/api';
+
+import { COLORS } from '../constants/colors';
+
+import useFavorites from '../hooks/useFavorites';
 
 export default function FavoritesScreen({ navigation }) {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  const favorites = [
-    SALONS[0],
-    SALONS[2],
-    SALONS[4],
-    SALONS[5],
-    SALONS[6],
-    SALONS[7],
-    SALONS[8],
-  ];
+  const [favoritesData, setFavoritesData] = useState([]);
+
+  const {
+    favorites,
+    toggleFav,
+  } = useFavorites();
+
+  useFocusEffect(
+    useCallback(() => {
+
+      const fetchFavorites = async () => {
+
+        try {
+
+          const response = await API.get('/favorites');
+
+          setFavoritesData(response.data);
+
+        } catch (error) {
+
+          console.log(error);
+
+        }
+
+      };
+
+      fetchFavorites();
+
+    }, [])
+  );
 
   return (
 
     <MainLayout navigation={navigation}>
 
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
 
-        {/* HEADER */}
         <View style={styles.topRow}>
 
           <Text style={styles.header}>
@@ -52,7 +77,7 @@ export default function FavoritesScreen({ navigation }) {
             <Ionicons
               name="options-outline"
               size={18}
-              color="#7C3AED"
+              color={COLORS.primary}
             />
 
             <Text style={styles.filterText}>
@@ -63,8 +88,7 @@ export default function FavoritesScreen({ navigation }) {
 
         </View>
 
-        {/* EMPTY */}
-        {favorites.length === 0 ? (
+        {favoritesData.length === 0 ? (
 
           <View style={styles.empty}>
 
@@ -87,29 +111,28 @@ export default function FavoritesScreen({ navigation }) {
         ) : (
 
           <FlatList
-            data={favorites}
+            data={favoritesData}
             renderItem={({ item }) => (
 
               <SalonCard
-                salon={item}
+                salon={item.salonId}
                 navigation={navigation}
+                favorites={favorites}
+                toggleFav={toggleFav}
               />
 
             )}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item._id}
             numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: 'space-between'
-            }}
+            columnWrapperStyle={styles.row}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingBottom: 120
+              paddingBottom: 120,
             }}
           />
 
         )}
 
-        {/* FILTER MODAL */}
         <FilterModal
           visible={showFilters}
           onClose={() => setShowFilters(false)}
@@ -123,56 +146,57 @@ export default function FavoritesScreen({ navigation }) {
           ]}
         />
 
-      </SafeAreaView>
+      </View>
 
     </MainLayout>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
-    paddingHorizontal: 15,
-    margin: 20,
-    marginBottom: 0,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
 
-  /* HEADER */
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 22,
   },
 
   header: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '900',
-    marginTop: 10,
-    marginLeft: 5,
+    color: COLORS.text,
   },
 
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEBFF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: COLORS.card,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     borderRadius: 14,
-    marginTop: 10,
   },
 
   filterText: {
     marginLeft: 6,
-    color: '#7C3AED',
+    color: COLORS.primary,
     fontSize: 12,
     fontWeight: '700',
   },
 
-  /* EMPTY */
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+
   empty: {
     flex: 1,
     justifyContent: 'center',
@@ -184,63 +208,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginTop: 15,
+    color: COLORS.text,
   },
 
   emptyText: {
     fontSize: 13,
-    color: '#777',
+    color: COLORS.gray,
     marginTop: 5,
     textAlign: 'center',
     paddingHorizontal: 40,
   },
 
-  /* MODAL */
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  filterModal: {
-    width: '82%',
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 22,
-  },
-
-  filterTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 20,
-    color: '#111',
-  },
-
-  filterOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-
-  optionText: {
-    marginLeft: 12,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#444',
-  },
-
-  applyBtn: {
-    marginTop: 10,
-    height: 52,
-    backgroundColor: '#7C3AED',
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  applyText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
 });

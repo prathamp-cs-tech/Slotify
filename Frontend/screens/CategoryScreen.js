@@ -1,59 +1,110 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect } from 'react';
 
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
+  FlatList,
+  Animated,
+  Easing,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import MainLayout from '../components/MainLayout';
 import SalonCard from '../components/SalonCard';
-import FilterModal from '../components/FilterModal';
-import { SALONS } from '../data/salons';
 
-export default function CategoryScreen({
-  route,
-  navigation,
-}) {
+import API from '../services/api';
+
+import { COLORS } from '../constants/colors';
+
+import useFavorites from '../hooks/useFavorites';
+
+export default function CategoryScreen({ route, navigation }) {
 
   const { category } = route.params;
 
-  const [showFilters, setShowFilters] = useState(false);
+  const [salons, setSalons] = useState([]);
 
-  const salons = SALONS.filter(
-    item =>
-      item.service?.toLowerCase().includes(
-      category?.toLowerCase()
-    )
-  );
+  const [loading, setLoading] = useState(true);
+
+  const {
+    favorites,
+    toggleFav,
+  } = useFavorites();
+
+  const loaderAnim = useState(
+    new Animated.Value(-150)
+  )[0];
+
+  useEffect(() => {
+
+    Animated.loop(
+
+      Animated.timing(loaderAnim, {
+
+        toValue: 350,
+        duration: 1200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+
+      })
+
+    ).start();
+
+  }, []);
+
+  useEffect(() => {
+
+    const fetchSalons = async () => {
+
+      try {
+
+        const response = await API.get('/salons');
+
+        const filtered = response.data.filter(
+          salon =>
+            salon.service.toLowerCase() ===
+            category.toLowerCase()
+        );
+
+        setSalons(filtered);
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    fetchSalons();
+
+  }, []);
 
   return (
 
     <MainLayout navigation={navigation}>
 
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
 
-        {/* HEADER */}
-        <View style={styles.topRow}>
+        <View style={styles.header}>
 
-          <Text style={styles.header}>
+          <Text style={styles.title}>
             {category}
           </Text>
 
-          <TouchableOpacity
-            style={styles.filterBtn}
-            onPress={() => setShowFilters(true)}
-          >
+          <TouchableOpacity style={styles.filterBtn}>
 
             <Ionicons
               name="options-outline"
               size={18}
-              color="#7C3AED"
+              color={COLORS.primary}
             />
 
             <Text style={styles.filterText}>
@@ -64,185 +115,141 @@ export default function CategoryScreen({
 
         </View>
 
-        {/* EMPTY */}
-        {salons.length === 0 ? (
+        {loading && (
 
-          <View style={styles.empty}>
+          <View style={styles.loaderWrapper}>
 
-            <Ionicons
-              name="search-outline"
-              size={70}
-              color="#C4B5FD"
-            />
+            <View style={styles.loaderTrack}>
 
-            <Text style={styles.emptyTitle}>
-              No Salons Found
-            </Text>
+              <Animated.View
+                style={[
+                  styles.loaderBar,
+                  {
+                    transform: [
+                      {
+                        translateX: loaderAnim,
+                      },
+                    ],
+                  },
+                ]}
+              />
 
-            <Text style={styles.emptyText}>
-              No salons available in this category.
-            </Text>
+            </View>
 
           </View>
 
-        ) : (
+        )}
+
+        {!loading && salons.length === 0 && (
+
+          <Text style={styles.emptyText}>
+            No salons found
+          </Text>
+
+        )}
+
+        {!loading && salons.length > 0 && (
 
           <FlatList
             data={salons}
+            keyExtractor={(item) => item._id}
+            numColumns={2}
+            showsVerticalScrollIndicator={false}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={{
+              paddingBottom: 120,
+            }}
             renderItem={({ item }) => (
 
               <SalonCard
                 salon={item}
                 navigation={navigation}
+                favorites={favorites}
+                toggleFav={toggleFav}
               />
 
             )}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: 'space-between'
-            }}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: 120
-            }}
           />
 
         )}
 
-        {/* FILTER MODAL */}
-        <FilterModal
-          visible={showFilters}
-          onClose={() => setShowFilters(false)}
-          checkedOption={category}
-          options={[
-            category,
-            'Nearest',
-            'Fastest',
-            'Highly Rated',
-            'Cheap to Costly',
-          ]}
-        />
-
-      </SafeAreaView>
+      </View>
 
     </MainLayout>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
-    paddingHorizontal: 15,
-    margin: 20,
-    marginBottom: 0,
-  },
-
-  /* HEADER */
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
 
   header: {
-    fontSize: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+
+  title: {
+    fontSize: 32,
     fontWeight: '900',
-    marginTop: 10,
-    marginLeft: 5,
+    color: COLORS.text,
   },
 
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEBFF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 14,
-    marginTop: 10,
+    backgroundColor: COLORS.card,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
   },
 
   filterText: {
-    marginLeft: 6,
-    color: '#7C3AED',
-    fontSize: 12,
+    marginLeft: 7,
+    color: COLORS.primary,
     fontWeight: '700',
+    fontSize: 14,
   },
 
-  /* EMPTY */
-  empty: {
-    flex: 1,
-    justifyContent: 'center',
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+
+  loaderWrapper: {
+    marginTop: 40,
     alignItems: 'center',
-    paddingBottom: 100,
   },
 
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 15,
+  loaderTrack: {
+    width: '90%',
+    height: 5,
+    backgroundColor: '#DDD6FE',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  loaderBar: {
+    width: 150,
+    height: 5,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
   },
 
   emptyText: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 5,
     textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-
-  /* MODAL */
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  filterModal: {
-    width: '82%',
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 22,
-  },
-
-  filterTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 20,
-    color: '#111',
-  },
-
-  filterOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-
-  optionText: {
-    marginLeft: 12,
-    fontSize: 14,
+    marginTop: 50,
+    fontSize: 16,
+    color: COLORS.gray,
     fontWeight: '600',
-    color: '#444',
-  },
-
-  applyBtn: {
-    marginTop: 10,
-    height: 52,
-    backgroundColor: '#7C3AED',
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  applyText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
   },
 
 });

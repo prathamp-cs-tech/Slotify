@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+
 import {
   View,
   Text,
@@ -6,44 +7,98 @@ import {
   TouchableOpacity,
   FlatList,
   Linking,
-  Modal,
+  Animated,
+  Easing,
 } from 'react-native';
 
+import { useFocusEffect } from '@react-navigation/native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import MainLayout from '../components/MainLayout';
 import PrimaryButton from '../components/PrimaryButton';
 import SuccessModal from '../components/SuccessModal';
-import { SALONS } from '../data/salons';
-import { BOOKINGS } from '../data/bookings';
+
+import API from '../services/api';
 
 export default function BookingsScreen({ navigation }) {
 
   const [activeTab, setActiveTab] = useState('upcoming');
   const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const getSalon = (id) => SALONS.find(s => s.id === id);
+  useFocusEffect(
+    useCallback(() => {
 
-  const filtered = BOOKINGS.filter(
+      const fetchBookings = async () => {
+
+        try {
+
+          setLoading(true);
+
+          const response = await API.get('/bookings');
+
+          setBookings(response.data);
+
+        } catch (error) {
+
+          console.log(error);
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+      fetchBookings();
+
+    }, [])
+  );
+
+  const cancelBooking = async (id) => {
+
+    try {
+
+      await API.put(`/bookings/${id}/cancel`);
+
+      setBookings(prev =>
+        prev.map(booking =>
+          booking._id === id
+            ? {
+                ...booking,
+                status: 'cancelled',
+              }
+            : booking
+        )
+      );
+
+      setShowCancelPopup(true);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  const filtered = bookings.filter(
     booking => booking.status === activeTab
   );
 
   const renderItem = ({ item }) => {
 
-    const salon = getSalon(item.salonId);
-
-    if (!salon) return null;
-
     return (
 
       <View style={styles.card}>
 
-        {/* TOP ROW */}
         <View style={styles.rowBetween}>
 
           <Text style={styles.salon}>
-            {salon.name}
+            {item.salonId?.name}
           </Text>
 
           <Text style={styles.status(item.status)}>
@@ -52,12 +107,10 @@ export default function BookingsScreen({ navigation }) {
 
         </View>
 
-        {/* SERVICE */}
         <Text style={styles.service}>
-          {item.service}
+          {item.salonId?.service}
         </Text>
 
-        {/* DATE + TIME */}
         <View style={styles.metaRow}>
 
           <Ionicons
@@ -81,7 +134,6 @@ export default function BookingsScreen({ navigation }) {
 
         </View>
 
-        {/* COMPLETED */}
         {item.status === 'completed' && (
 
           <View>
@@ -89,7 +141,9 @@ export default function BookingsScreen({ navigation }) {
             <PrimaryButton
               title="Book Again"
               onPress={() =>
-                navigation.navigate('Salon', { salon })
+                navigation.navigate('Salon', {
+                  salon: item.salonId,
+                })
               }
             />
 
@@ -109,7 +163,6 @@ export default function BookingsScreen({ navigation }) {
                     name="star-outline"
                     size={24}
                     color="#F4B400"
-
                   />
 
                 </TouchableOpacity>
@@ -122,11 +175,10 @@ export default function BookingsScreen({ navigation }) {
 
         )}
 
-        {/* UPCOMING */}
         {item.status === 'upcoming' && (
+
           <>
 
-            
             <PrimaryButton
               title="Navigate"
               onPress={() =>
@@ -141,28 +193,29 @@ export default function BookingsScreen({ navigation }) {
               bordered
               backgroundColor="red"
               textColor="red"
-              onPress={() => setShowCancelPopup(true)}
+              onPress={() => cancelBooking(item._id)}
             />
 
           </>
+
         )}
 
       </View>
+
     );
+
   };
 
   return (
 
     <MainLayout navigation={navigation}>
 
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
 
-        {/* HEADER */}
         <Text style={styles.header}>
           My Bookings
         </Text>
 
-        {/* TABS */}
         <View style={styles.tabs}>
 
           {['upcoming', 'completed', 'cancelled'].map(tab => (
@@ -191,28 +244,50 @@ export default function BookingsScreen({ navigation }) {
 
         </View>
 
-        {/* LIST */}
+        {loading && (
+
+          <View style={styles.loadingWrapper}>
+
+            <View style={styles.loaderTrack}>
+
+              <Animated.View style={styles.loaderBar} />
+
+            </View>
+
+          </View>
+
+        )}
+
+        {!loading && filtered.length === 0 && (
+
+          <Text style={styles.emptyText}>
+            No bookings found
+          </Text>
+
+        )}
+
         <FlatList
           data={filtered}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 120
+            paddingBottom: 120,
           }}
         />
 
-        {/* POPUP */}
         <SuccessModal
           visible={showCancelPopup}
-          title="Cancellation Requested"
+          title="Booking Cancelled"
           onClose={() => setShowCancelPopup(false)}
         />
 
-      </SafeAreaView>
+      </View>
 
     </MainLayout>
+
   );
+
 }
 
 const styles = StyleSheet.create({
@@ -220,13 +295,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F0FF',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
 
   header: {
     fontSize: 24,
     fontWeight: '900',
     marginBottom: 20,
+    color: '#111',
   },
 
   tabs: {
@@ -250,6 +327,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#555',
     fontWeight: '500',
+    textTransform: 'capitalize',
   },
 
   activeTabText: {
@@ -260,7 +338,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 16,
+    borderRadius: 18,
     marginBottom: 15,
   },
 
@@ -273,6 +351,7 @@ const styles = StyleSheet.create({
   salon: {
     fontSize: 15,
     fontWeight: '700',
+    color: '#111',
   },
 
   service: {
@@ -285,6 +364,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 10,
+    marginBottom: 6,
   },
 
   metaText: {
@@ -304,90 +384,46 @@ const styles = StyleSheet.create({
         : '#7C3AED',
   }),
 
-  navigateBtn: {
-    marginTop: 12,
-    backgroundColor: '#7C3AED',
-    padding: 11,
-    borderRadius: 22,
-    alignItems: 'center',
-  },
-
-  navigateText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-
-  cancelBtn: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: 'red',
-    padding: 11,
-    borderRadius: 22,
-    alignItems: 'center',
-  },
-
-  cancelText: {
-    color: 'red',
-    fontWeight: '600',
-  },
-
-  bookAgainBtn: {
-    marginTop: 12,
-    backgroundColor: '#7C3AED',
-    padding: 11,
-    borderRadius: 22,
-    alignItems: 'center',
-  },
-
-  bookAgainText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  modalBox: {
-    backgroundColor: '#fff',
-    padding: 30,
-    borderRadius: 20,
-    alignItems: 'center',
-    width: '70%',
-  },
-
-  modalText: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-
-  okBtn: {
-    marginTop: 15,
-  },
-
-  okText: {
-    color: '#7C3AED',
-    fontWeight: '700',
-    fontSize: 15,
-  },
-
   rateText: {
-  textAlign: 'center',
-  marginTop: 16,
-  marginBottom: 8,
-  fontSize: 15,
-  fontWeight: '600',
-  color: '#333',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
   },
 
   starsRow: {
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
+  },
+
+  loadingWrapper: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+
+  loaderTrack: {
+    width: '85%',
+    height: 5,
+    backgroundColor: '#E9D5FF',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  loaderBar: {
+    width: '100%',
+    height: 5,
+    backgroundColor: '#7C3AED',
+  },
+
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+    color: '#777',
+    fontWeight: '600',
   },
 
 });

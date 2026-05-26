@@ -1,212 +1,254 @@
+import React, { useState } from 'react';
+
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Linking,
-  } from 'react-native';
-  import { SafeAreaView } from 'react-native-safe-area-context';
-  
-  import { Ionicons } from '@expo/vector-icons';
-  
-  export default function HelpCenterScreen({ navigation }) {
-  
-    return (
-  
-      <SafeAreaView style={styles.container}>
-  
-        {/* HEADER */}
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+ ScrollView,
+} from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+
+import PrimaryButton from '../components/PrimaryButton';
+import SuccessModal from '../components/SuccessModal';
+
+import { COLORS } from '../constants/colors';
+
+export default function EditProfileScreen({ navigation }) {
+
+  const [saved, setSaved] = useState(false);
+
+  return (
+
+    <View style={styles.container}>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 40,
+        }}
+      >
+
         <View style={styles.headerRow}>
-  
+
           <TouchableOpacity
             onPress={() => navigation.goBack()}
           >
+
             <Ionicons
               name="arrow-back"
               size={24}
-              color="#111"
+              color={COLORS.text}
             />
+
           </TouchableOpacity>
-  
+
           <Text style={styles.header}>
-            Help Center
+            Edit Profile
           </Text>
-  
+
           <View style={{ width: 24 }} />
-  
+
         </View>
-  
-        {/* OPTIONS */}
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            Linking.openURL('tel:+919876543210')
-          }
-        >
-  
-          <Ionicons
-            name="call"
-            size={22}
-            color="#7C3AED"
-          />
-  
-          <View style={styles.content}>
-  
-            <Text style={styles.title}>
-              Call Support
-            </Text>
-  
-            <Text style={styles.subtitle}>
-              +91 9876543210
-            </Text>
-  
+
+        <View style={styles.imageSection}>
+
+          <View style={styles.avatarWrapper}>
+
+            <Image
+              source={{
+                uri: 'https://randomuser.me/api/portraits/men/32.jpg',
+              }}
+              style={styles.avatar}
+            />
+
+            <TouchableOpacity style={styles.cameraBtn}>
+
+              <Ionicons
+                name="camera"
+                size={15}
+                color={COLORS.white}
+              />
+
+            </TouchableOpacity>
+
           </View>
-  
-        </TouchableOpacity>
-  
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            Linking.openURL('https://wa.me/919876543210')
-          }
-        >
-  
-          <Ionicons
-            name="logo-whatsapp"
-            size={22}
-            color="#22C55E"
-          />
-  
-          <View style={styles.content}>
-  
-            <Text style={styles.title}>
-              WhatsApp Support
-            </Text>
-  
-            <Text style={styles.subtitle}>
-              Chat with support team
-            </Text>
-  
-          </View>
-  
-        </TouchableOpacity>
-  
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            Linking.openURL('mailto:support@slotify.com')
-          }
-        >
-  
-          <Ionicons
-            name="mail"
-            size={22}
-            color="#2563EB"
-          />
-  
-          <View style={styles.content}>
-  
-            <Text style={styles.title}>
-              Email Support
-            </Text>
-  
-            <Text style={styles.subtitle}>
-              support@slotify.com
-            </Text>
-  
-          </View>
-  
-        </TouchableOpacity>
-  
-        <View style={styles.faqCard}>
-  
-          <Text style={styles.faqTitle}>
-            Frequently Asked Questions
-          </Text>
-  
-          <Text style={styles.faqItem}>
-            • How to cancel a booking?
-          </Text>
-  
-          <Text style={styles.faqItem}>
-            • How to reschedule appointment?
-          </Text>
-  
-          <Text style={styles.faqItem}>
-            • How to contact salon?
-          </Text>
-  
+
         </View>
-  
-      </SafeAreaView>
-  
-    );
-  }
-  
-  const styles = StyleSheet.create({
-  
-    container: {
-      flex: 1,
-      paddingHorizontal: 15,
-      margin: 20,
-      marginBottom: 0,
-    },
-  
-    headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: 10,
-      marginBottom: 25,
-    },
-  
-    header: {
-      fontSize: 24,
-      fontWeight: '900',
-    },
-  
-    card: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#EDEBFF',
-      borderRadius: 18,
-      padding: 16,
-      marginBottom: 15,
-    },
-  
-    content: {
-      marginLeft: 14,
-    },
-  
-    title: {
-      fontSize: 14,
-      fontWeight: '700',
-      color: '#111',
-    },
-  
-    subtitle: {
-      marginTop: 4,
-      fontSize: 12,
-      color: '#666',
-    },
-  
-    faqCard: {
-      backgroundColor: '#EDEBFF',
-      borderRadius: 18,
-      padding: 18,
-      marginTop: 10,
-    },
-  
-    faqTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-      marginBottom: 12,
-    },
-  
-    faqItem: {
-      fontSize: 13,
-      color: '#555',
-      marginBottom: 10,
-    },
-  
-  });
+
+        <View style={styles.formCard}>
+
+          <View style={styles.inputGroup}>
+
+            <Text style={styles.label}>
+              Full Name
+            </Text>
+
+            <TextInput
+              defaultValue="Puneeth"
+              placeholder="Enter name"
+              placeholderTextColor={COLORS.lightGray}
+              style={styles.input}
+            />
+
+          </View>
+
+          <View style={styles.inputGroup}>
+
+            <Text style={styles.label}>
+              Email
+            </Text>
+
+            <TextInput
+              defaultValue="puneeth@email.com"
+              placeholder="Enter email"
+              placeholderTextColor={COLORS.lightGray}
+              style={styles.input}
+            />
+
+          </View>
+
+          <View style={styles.inputGroup}>
+
+            <Text style={styles.label}>
+              Phone Number
+            </Text>
+
+            <TextInput
+              defaultValue="+91 9876543210"
+              placeholder="Enter phone"
+              placeholderTextColor={COLORS.lightGray}
+              style={styles.input}
+            />
+
+          </View>
+
+          <View style={styles.inputGroup}>
+
+            <Text style={styles.label}>
+              Location
+            </Text>
+
+            <TextInput
+              defaultValue="Bangalore"
+              placeholder="Enter location"
+              placeholderTextColor={COLORS.lightGray}
+              style={styles.input}
+            />
+
+          </View>
+
+        </View>
+
+        <View style={styles.buttonWrapper}>
+
+          <PrimaryButton
+            title="Save Changes"
+            onPress={() => setSaved(true)}
+          />
+
+        </View>
+
+      </ScrollView>
+
+      <SuccessModal
+        visible={saved}
+        title="Profile Updated"
+        onClose={() => {
+          setSaved(false);
+          navigation.goBack();
+        }}
+      />
+
+    </View>
+
+  );
+
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 25,
+  },
+
+  header: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+
+  imageSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+
+  avatarWrapper: {
+    position: 'relative',
+  },
+
+  avatar: {
+    width: 95,
+    height: 95,
+    borderRadius: 48,
+  },
+
+  cameraBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  formCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 22,
+    padding: 16,
+  },
+
+  inputGroup: {
+    marginBottom: 14,
+  },
+
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.gray,
+    marginBottom: 7,
+    marginLeft: 3,
+  },
+
+  input: {
+    height: 50,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+
+  buttonWrapper: {
+    marginTop: 22,
+  },
+
+});

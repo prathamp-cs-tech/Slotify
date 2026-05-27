@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-
 import {
+  Keyboard,
+  TouchableWithoutFeedback,
   View,
   Text,
   StyleSheet,
@@ -11,27 +11,62 @@ import {
   Easing,
 } from 'react-native';
 
-import { useFocusEffect } from '@react-navigation/native';
+import {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from 'react';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
+
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
 import MainLayout from '../components/MainLayout';
+
 import PrimaryButton from '../components/PrimaryButton';
+
 import SuccessModal from '../components/SuccessModal';
+
+import RatingModal from '../components/RatingModal';
 
 import API from '../services/api';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
-export default function BookingsScreen({ navigation }) {
+export default function BookingsScreen({
+  navigation,
+}) {
 
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab,
+    setActiveTab] =
+      useState('upcoming');
 
-  const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [showCancelPopup,
+    setShowCancelPopup] =
+      useState(false);
 
-  const [bookings, setBookings] = useState([]);
+  const [bookings,
+    setBookings] =
+      useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [showRatingModal,
+    setShowRatingModal] =
+      useState(false);
+
+  const [selectedBooking,
+    setSelectedBooking] =
+      useState(null);
+
+  const [loading,
+    setLoading] =
+      useState(true);
 
   const slideAnim = useRef(
     new Animated.Value(-120)
@@ -55,96 +90,166 @@ export default function BookingsScreen({ navigation }) {
   }, []);
 
   useFocusEffect(
+
     useCallback(() => {
-
-      const fetchBookings = async () => {
-
-        try {
-
-          setLoading(true);
-
-          const response = await API.get('/bookings');
-
-          setBookings(response.data);
-
-        } catch (error) {
-
-          console.log(error);
-
-        } finally {
-
-          setLoading(false);
-
-        }
-
-      };
 
       fetchBookings();
 
     }, [])
+
   );
 
-  const cancelBooking = async (id) => {
+  const fetchBookings =
+    async () => {
 
-    try {
+      try {
 
-      await API.put(`/bookings/${id}/cancel`);
+        setLoading(true);
 
-      setBookings(prev =>
-        prev.map(booking =>
-          booking._id === id
-            ? {
-                ...booking,
-                status: 'cancelled',
-              }
-            : booking
-        )
-      );
+        const response =
+          await API.get(
+            '/bookings'
+          );
 
-      setShowCancelPopup(true);
+        setBookings(
+          response.data
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
+      } finally {
 
-  };
+        setLoading(false);
 
-  const filtered = bookings.filter(
-    booking => booking.status === activeTab
-  );
-
-  const formatDate = (date) => {
-
-    return new Date(date).toLocaleDateString(
-      'en-IN',
-      {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
       }
+
+    };
+
+  const submitRating =
+    async (
+      rating,
+      review
+    ) => {
+
+      try {
+
+        await API.put(
+
+          `/bookings/${selectedBooking._id}/rate`,
+
+          {
+            rating,
+            review,
+          }
+
+        );
+
+        setBookings(prev =>
+
+          prev.map(item =>
+
+            item._id ===
+            selectedBooking._id
+
+              ? {
+
+                  ...item,
+
+                  rating,
+
+                  review,
+
+                  isRated: true,
+
+                }
+
+              : item
+
+          )
+
+        );
+
+        setShowRatingModal(false);
+
+        setSelectedBooking(null);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+  const cancelBooking =
+    async (id) => {
+
+      try {
+
+        await API.put(
+          `/bookings/${id}/cancel`
+        );
+
+        setBookings(prev =>
+
+          prev.map(booking =>
+
+            booking._id === id
+
+              ? {
+                  ...booking,
+                  status: 'cancelled',
+                }
+
+              : booking
+
+          )
+
+        );
+
+        setShowCancelPopup(true);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+  const filtered =
+    bookings.filter(
+
+      booking =>
+        booking.status ===
+        activeTab
+
     );
 
-  };
+  const formatDate =
+    (date) => {
 
-  const formatTime = (date) => {
+      return new Date(date)
+        .toLocaleDateString(
+          'en-IN',
+          {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          }
+        );
 
-    return new Date(date).toLocaleTimeString(
-      'en-IN',
-      {
-        hour: 'numeric',
-        minute: '2-digit',
-      }
-    );
+    };
 
-  };
-
-  const renderItem = ({ item }) => {
+  const renderItem = ({
+    item,
+  }) => {
 
     return (
 
-      <View style={styles.card}>
+      <View style={styles.card} collapsable={false}>
 
         <View style={styles.rowBetween}>
 
@@ -152,15 +257,53 @@ export default function BookingsScreen({ navigation }) {
             {item.salonId?.name}
           </Text>
 
-          <Text style={styles.status(item.status)}>
+          <Text
+            style={
+              styles.status(
+                item.status
+              )
+            }
+          >
             {item.status.toUpperCase()}
           </Text>
 
         </View>
 
-        <Text style={styles.service}>
-          {item.salonId?.service}
-        </Text>
+        <View style={styles.serviceRow}>
+
+          <View>
+
+            <Text
+              style={
+                styles.serviceName
+              }
+            >
+              {item.serviceId?.name}
+            </Text>
+
+            <Text
+              style={
+                styles.category
+              }
+            >
+              {item.serviceId?.category}
+            </Text>
+
+          </View>
+
+          <View style={styles.priceChip}>
+
+            <Text
+              style={
+                styles.priceText
+              }
+            >
+              ₹{item.serviceId?.price}
+            </Text>
+
+          </View>
+
+        </View>
 
         <View style={styles.metaRow}>
 
@@ -171,82 +314,161 @@ export default function BookingsScreen({ navigation }) {
           />
 
           <Text style={styles.metaText}>
-            {formatDate(item.bookingDate)}
+            {formatDate(
+              item.bookingDate
+            )}
           </Text>
 
           <Ionicons
             name="time-outline"
             size={14}
             color={COLORS.gray}
-            style={{ marginLeft: 10 }}
+            style={{
+              marginLeft: 10,
+            }}
           />
 
           <Text style={styles.metaText}>
-            {formatTime(item.bookingDate)}
+            {item.bookingTime}
           </Text>
 
         </View>
 
-        {item.status === 'completed' && (
+        {item.status ===
+          'completed' && (
 
           <View>
 
             <PrimaryButton
               title="Book Again"
               onPress={() =>
-                navigation.navigate('Salon', {
-                  salon: item.salonId,
-                })
+
+                navigation.navigate(
+                  'Salon',
+                  {
+                    salon: {
+
+                      ...item.salonId,
+
+                      serviceData:
+                        item.serviceId,
+
+                    },
+                  }
+                )
+
               }
+              disabled={loading}
             />
 
-            <Text style={styles.rateText}>
-              Rate your experience
-            </Text>
+            {item.isRated ? (
 
-            <View style={styles.starsRow}>
+              <View
+                style={
+                  styles.ratedContainer
+                }
+              >
 
-              {[1, 2, 3, 4, 5].map((star) => (
+                <Text
+                  style={
+                    styles.rateText
+                  }
+                >
+                  You Rated
+                </Text>
 
-                <TouchableOpacity
-                  key={star}
+                <View
+                  style={
+                    styles.starsRow
+                  }
                 >
 
-                  <Ionicons
-                    name="star-outline"
-                    size={24}
-                    color={COLORS.warning}
-                  />
+                  {[1,2,3,4,5]
+                    .map((star) => (
 
-                </TouchableOpacity>
+                    <Ionicons
 
-              ))}
+                      key={star}
 
-            </View>
+                      name={
+                        star <= item.rating
+
+                          ? 'star'
+
+                          : 'star-outline'
+                      }
+
+                      size={24}
+
+                      color="#F59E0B"
+
+                    />
+
+                  ))}
+
+                </View>
+
+              </View>
+
+            ) : (
+
+              <PrimaryButton
+                title="Rate Now"
+                onPress={() => {
+
+                  setSelectedBooking(
+                    item
+                  );
+
+                  setShowRatingModal(
+                    true
+                  );
+
+                }}
+                disabled={loading}
+              />
+
+            )}
 
           </View>
 
         )}
 
-        {item.status === 'upcoming' && (
+        {item.status ===
+          'upcoming' && (
 
           <>
 
             <PrimaryButton
               title="Navigate"
               onPress={() =>
+
                 Linking.openURL(
-                  'https://maps.google.com/?q=BMS+College+of+Engineering+Bangalore'
+
+                  item.salonId
+                    ?.mapLink ||
+
+                  'https://maps.google.com/?q=Bangalore'
+
                 )
+
               }
             />
 
             <PrimaryButton
               title="Cancel Booking"
               bordered
-              backgroundColor={COLORS.danger}
-              textColor={COLORS.danger}
-              onPress={() => cancelBooking(item._id)}
+              backgroundColor={
+                COLORS.danger
+              }
+              textColor={
+                COLORS.danger
+              }
+              onPress={() =>
+                cancelBooking(
+                  item._id
+                )
+              }
             />
 
           </>
@@ -261,96 +483,167 @@ export default function BookingsScreen({ navigation }) {
 
   return (
 
-    <MainLayout navigation={navigation}>
+    <MainLayout
+      navigation={navigation}
+    >
 
-      <View style={styles.container}>
+      
 
-        <Text style={styles.header}>
-          My Bookings
-        </Text>
+        <View style={styles.container}>
 
-        <View style={styles.tabs}>
+          <Text style={styles.header}>
+            My Bookings
+          </Text>
 
-          {['upcoming', 'completed', 'cancelled'].map(tab => (
+          <View style={styles.tabs}>
 
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              style={[
-                styles.tab,
-                activeTab === tab && styles.activeTab
-              ]}
-            >
+            {[
+              'upcoming',
+              'completed',
+              'cancelled',
+            ].map(tab => (
 
-              <Text
+              <TouchableOpacity
+                key={tab}
+                onPress={() =>
+                  setActiveTab(tab)
+                }
                 style={[
-                  styles.tabText,
-                  activeTab === tab && styles.activeTabText
+
+                  styles.tab,
+
+                  activeTab === tab &&
+                  styles.activeTab,
+
                 ]}
               >
-                {tab}
-              </Text>
 
-            </TouchableOpacity>
+                <Text
+                  style={[
 
-          ))}
+                    styles.tabText,
 
-        </View>
+                    activeTab === tab &&
+                    styles.activeTabText,
 
-        {loading && (
+                  ]}
+                >
+                  {tab}
+                </Text>
 
-          <View style={styles.loadingWrapper}>
+              </TouchableOpacity>
 
-            <View style={styles.loaderTrack}>
-
-              <Animated.View
-                style={[
-                  styles.loaderBar,
-                  {
-                    transform: [
-                      {
-                        translateX: slideAnim,
-                      },
-                    ],
-                  },
-                ]}
-              />
-
-            </View>
+            ))}
 
           </View>
 
-        )}
+          {loading && (
 
-        {!loading && filtered.length === 0 && (
+            <View
+              style={
+                styles.loadingWrapper
+              }
+            >
 
-          <Text style={styles.emptyText}>
-            No bookings found
-          </Text>
+              <View
+                style={
+                  styles.loaderTrack
+                }
+              >
 
-        )}
+                <Animated.View
+                  style={[
 
-        {!loading && (
+                    styles.loaderBar,
 
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item._id}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: 120,
-            }}
+                    {
+                      transform: [
+                        {
+                          translateX:
+                            slideAnim,
+                        },
+                      ],
+                    },
+
+                  ]}
+                />
+
+              </View>
+
+            </View>
+
+          )}
+
+          {!loading &&
+            filtered.length === 0 && (
+
+            <Text
+              style={styles.emptyText}
+            >
+              No bookings found
+            </Text>
+
+          )}
+
+          {!loading && (
+
+            <FlatList
+
+              data={filtered}
+
+              keyExtractor={(item) =>
+                item._id
+              }
+
+              renderItem={renderItem}
+
+              keyboardShouldPersistTaps="handled"
+
+              showsVerticalScrollIndicator={false}
+
+              
+              nestedScrollEnabled
+
+              contentContainerStyle={{
+                paddingBottom: 120,
+              }}
+
+            />
+
+          )}
+
+          <SuccessModal
+            visible={showCancelPopup}
+            title="Booking Cancelled"
+            onClose={() =>
+              setShowCancelPopup(false)
+            }
           />
 
-        )}
+        </View>
 
-        <SuccessModal
-          visible={showCancelPopup}
-          title="Booking Cancelled"
-          onClose={() => setShowCancelPopup(false)}
-        />
+      
 
-      </View>
+      <RatingModal
+
+        visible={showRatingModal}
+
+        serviceName={
+          selectedBooking
+            ?.serviceId?.name
+        }
+
+        onClose={() => {
+
+          setShowRatingModal(false);
+
+          setSelectedBooking(null);
+
+        }}
+
+        onSubmit={submitRating}
+
+      />
 
     </MainLayout>
 
@@ -362,7 +655,8 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
@@ -384,18 +678,21 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: COLORS.card,
+    backgroundColor:
+      COLORS.card,
   },
 
   activeTab: {
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
   },
 
   tabText: {
     fontSize: 12,
     color: COLORS.gray,
     fontWeight: '500',
-    textTransform: 'capitalize',
+    textTransform:
+      'capitalize',
   },
 
   activeTabText: {
@@ -404,52 +701,90 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: COLORS.white,
-    padding: 15,
-    borderRadius: 18,
-    marginBottom: 15,
+    backgroundColor:
+      COLORS.white,
+    padding: 18,
+    borderRadius: 20,
+    marginBottom: 16,
+    overflow: 'hidden',
   },
 
   rowBetween: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
   },
 
   salon: {
-    fontSize: 15,
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+
+  serviceRow: {
+    marginTop: 14,
+    flexDirection: 'row',
+    justifyContent:
+      'space-between',
+    alignItems: 'center',
+  },
+
+  serviceName: {
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
   },
 
-  service: {
-    color: COLORS.gray,
+  category: {
     marginTop: 5,
+    color: COLORS.gray,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  priceChip: {
+    backgroundColor:
+      '#EDE9FE',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+
+  priceText: {
+    color: COLORS.primary,
+    fontWeight: '800',
     fontSize: 13,
   },
 
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 6,
+    marginTop: 14,
+    marginBottom: 4,
   },
 
   metaText: {
     marginLeft: 5,
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.gray,
+    fontWeight: '600',
   },
 
   status: (status) => ({
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
+
     color:
+
       status === 'completed'
         ? 'green'
+
         : status === 'cancelled'
         ? COLORS.danger
+
         : COLORS.primary,
+
   }),
 
   rateText: {
@@ -475,7 +810,8 @@ const styles = StyleSheet.create({
   loaderTrack: {
     width: '85%',
     height: 5,
-    backgroundColor: '#DDD6FE',
+    backgroundColor:
+      '#DDD6FE',
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -483,7 +819,8 @@ const styles = StyleSheet.create({
   loaderBar: {
     width: 120,
     height: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
     borderRadius: 10,
   },
 
@@ -493,6 +830,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.gray,
     fontWeight: '600',
+  },
+
+  ratedContainer: {
+    marginTop: 16,
+    alignItems: 'center',
   },
 
 });

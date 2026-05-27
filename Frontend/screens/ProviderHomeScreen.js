@@ -1,3 +1,5 @@
+// screens/ProviderHomeScreen.js
+
 import {
   View,
   Text,
@@ -5,6 +7,8 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 
 import {
@@ -15,28 +19,37 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from 'react';
 
 import {
-  Animated,
-  Easing,
-} from 'react-native';
+  useFocusEffect,
+} from '@react-navigation/native';
 
-import ProviderLayout from '../components/ProviderLayout';
+import ProviderLayout
+  from '../components/ProviderLayout';
 
-import ProviderCard from '../components/ProviderCard';
+import ProviderCard
+  from '../components/ProviderCard';
 
 import API from '../services/api';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
 export default function ProviderHomeScreen({
   navigation,
 }) {
 
-  const [services, setServices] = useState([]);
+  const [salon, setSalon] =
+    useState(null);
 
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   const slideAnim = useRef(
     new Animated.Value(-120)
@@ -65,41 +78,61 @@ export default function ProviderHomeScreen({
 
   }, []);
 
-  useEffect(() => {
+  useFocusEffect(
 
-    const fetchServices = async () => {
+    useCallback(() => {
 
-      try {
+      fetchSalon();
 
-        const response = await API.get('/salons');
+    }, [])
 
-        setServices(response.data);
+  );
 
-      } catch (error) {
+  const fetchSalon = async () => {
 
-        console.log(error);
+    try {
 
-      } finally {
+      setLoading(true);
 
-        setLoading(false);
+      const response =
+        await API.get(
+          '/provider/my-salon'
+        );
 
-      }
+      setSalon(response.data);
 
-    };
+      setServices(
+        response.data?.services || []
+      );
 
-    fetchServices();
+    } catch (error) {
 
-  }, []);
+      console.log(
+        error.response?.data || error
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
   return (
 
-    <ProviderLayout navigation={navigation} active="home">
+    <ProviderLayout
+      navigation={navigation}
+      active="home"
+    >
 
       <View style={styles.safe}>
 
         <StatusBar
           barStyle="dark-content"
-          backgroundColor={COLORS.background}
+          backgroundColor={
+            COLORS.background
+          }
         />
 
         <View style={styles.header}>
@@ -117,7 +150,9 @@ export default function ProviderHomeScreen({
           </View>
 
           <TouchableOpacity
-            style={styles.notificationBtn}
+            style={
+              styles.notificationBtn
+            }
           >
 
             <Ionicons
@@ -129,6 +164,23 @@ export default function ProviderHomeScreen({
           </TouchableOpacity>
 
         </View>
+
+        {salon && (
+
+          <View style={styles.salonCard}>
+
+            <Text style={styles.salonName}>
+              {salon.name}
+            </Text>
+
+            <Text style={styles.salonInfo}>
+              {salon.address ||
+                'Bangalore'}
+            </Text>
+
+          </View>
+
+        )}
 
         <View style={styles.statsRow}>
 
@@ -147,11 +199,18 @@ export default function ProviderHomeScreen({
           <View style={styles.statCard}>
 
             <Text style={styles.statNumber}>
-              124
+
+              {
+                services.filter(
+                  service =>
+                    service.isActive
+                ).length
+              }
+
             </Text>
 
             <Text style={styles.statLabel}>
-              Bookings
+              Active
             </Text>
 
           </View>
@@ -159,7 +218,25 @@ export default function ProviderHomeScreen({
           <View style={styles.statCard}>
 
             <Text style={styles.statNumber}>
-              4.8
+
+              {services.length > 0
+
+                ? (
+                    services.reduce(
+
+                      (sum, service) =>
+
+                        sum +
+                        (service.averageRating || 0),
+
+                      0
+
+                    ) / services.length
+
+                  ).toFixed(1)
+
+                : '0.0'}
+
             </Text>
 
             <Text style={styles.statLabel}>
@@ -170,17 +247,16 @@ export default function ProviderHomeScreen({
 
         </View>
 
-        <View style={styles.titleRow}>
-
-          <Text style={styles.sectionTitle}>
-            Your Services
-          </Text>
-
-        </View>
         <TouchableOpacity
+
           style={styles.addServiceBtn}
+
           onPress={() =>
-            navigation.navigate('AddService')
+
+            navigation.navigate(
+              'AddService'
+            )
+
           }
         >
 
@@ -196,26 +272,42 @@ export default function ProviderHomeScreen({
 
         </TouchableOpacity>
 
+        <Text style={styles.sectionTitle}>
+          Your Services
+        </Text>
+
         <ScrollView
           showsVerticalScrollIndicator={false}
         >
 
           {loading ? (
 
-            <View style={styles.loaderWrapper}>
+            <View
+              style={
+                styles.loaderWrapper
+              }
+            >
 
-              <View style={styles.loaderTrack}>
+              <View
+                style={
+                  styles.loaderTrack
+                }
+              >
 
                 <Animated.View
                   style={[
+
                     styles.loaderBar,
+
                     {
                       transform: [
                         {
-                          translateX: slideAnim,
+                          translateX:
+                            slideAnim,
                         },
                       ],
                     },
+
                   ]}
                 />
 
@@ -225,7 +317,11 @@ export default function ProviderHomeScreen({
 
           ) : services.length === 0 ? (
 
-            <View style={styles.emptyContainer}>
+            <View
+              style={
+                styles.emptyContainer
+              }
+            >
 
               <Ionicons
                 name="cut-outline"
@@ -233,12 +329,12 @@ export default function ProviderHomeScreen({
                 color="#C4B5FD"
               />
 
-              <Text style={styles.emptyTitle}>
+              <Text
+                style={
+                  styles.emptyTitle
+                }
+              >
                 No Services Yet
-              </Text>
-
-              <Text style={styles.emptyText}>
-                Add your first salon service to start receiving bookings
               </Text>
 
             </View>
@@ -247,25 +343,35 @@ export default function ProviderHomeScreen({
 
             <View style={styles.grid}>
 
-              {services.map((salon) => (
+              {services.map(
+                (service) => (
 
-                <ProviderCard
-                  key={salon._id}
-                  salon={salon}
-                  navigation={navigation}
-                />
+                  <ProviderCard
 
-              ))}
+                    key={service._id}
+
+                    salon={salon}
+
+                    service={service}
+
+                    navigation={
+                      navigation
+                    }
+
+                  />
+
+                )
+              )}
 
             </View>
 
           )}
 
-          <View style={{ height: 120 }} />
+          <View
+            style={{ height: 120 }}
+          />
 
         </ScrollView>
-
-        
 
       </View>
 
@@ -279,13 +385,15 @@ const styles = StyleSheet.create({
 
   safe: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingTop: 8,
   },
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 10,
@@ -310,21 +418,45 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: COLORS.white,
+    backgroundColor:
+      COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
+  salonCard: {
+    backgroundColor:
+      COLORS.primary,
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+  },
+
+  salonName: {
+    color: COLORS.white,
+    fontSize: 22,
+    fontWeight: '800',
+  },
+
+  salonInfo: {
+    marginTop: 5,
+    color: '#E9D5FF',
+    fontSize: 13,
+  },
+
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     paddingHorizontal: 20,
     marginBottom: 24,
   },
 
   statCard: {
     width: '31%',
-    backgroundColor: COLORS.card,
+    backgroundColor:
+      COLORS.card,
     borderRadius: 18,
     paddingVertical: 18,
     alignItems: 'center',
@@ -343,18 +475,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  titleRow: {
+  addServiceBtn: {
+    marginHorizontal: 20,
+    marginBottom: 22,
+    backgroundColor:
+      COLORS.primary,
+    borderRadius: 18,
+    paddingVertical: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 15,
+  },
+
+  addServiceText: {
+    marginLeft: 8,
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '700',
   },
 
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: COLORS.text,
+    paddingHorizontal: 20,
+    marginBottom: 15,
   },
 
   grid: {
@@ -377,7 +522,8 @@ const styles = StyleSheet.create({
   loaderBar: {
     width: 120,
     height: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
     borderRadius: 10,
   },
 
@@ -392,31 +538,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: COLORS.text,
-  },
-
-  emptyText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: COLORS.gray,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  addServiceBtn: {
-    marginHorizontal: 20,
-    marginBottom: 22,
-    backgroundColor: COLORS.primary,
-    borderRadius: 18,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  addServiceText: {
-    marginLeft: 8,
-    color: COLORS.white,
-    fontSize: 15,
-    fontWeight: '700',
   },
 
 });

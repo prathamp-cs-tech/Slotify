@@ -3,7 +3,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView,
   Switch,
 } from 'react-native';
@@ -75,30 +74,17 @@ export default function ProfileScreen({
           }}
         >
 
-          {/* TOP SECTION */}
           <View style={styles.topSection}>
 
-            <View style={styles.avatarWrapper}>
+            <View style={styles.avatar}>
 
-              <Image
-                source={{
-                  uri:
-                    'https://randomuser.me/api/portraits/men/32.jpg',
-                }}
-                style={styles.avatar}
-              />
+              <Text style={styles.avatarLetter}>
 
-              <TouchableOpacity
-                style={styles.editAvatarBtn}
-              >
+                {user?.name
+                  ? user.name.charAt(0).toUpperCase()
+                  : 'U'}
 
-                <Ionicons
-                  name="camera"
-                  size={15}
-                  color={COLORS.white}
-                />
-
-              </TouchableOpacity>
+              </Text>
 
             </View>
 
@@ -119,7 +105,6 @@ export default function ProfileScreen({
 
           </View>
 
-          {/* ACCOUNT */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -231,7 +216,6 @@ export default function ProfileScreen({
 
           </View>
 
-          {/* PREFERENCES */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -274,7 +258,6 @@ export default function ProfileScreen({
 
           </View>
 
-          {/* SUPPORT */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -351,7 +334,6 @@ export default function ProfileScreen({
 
           </View>
 
-          {/* LOGOUT */}
           <View style={styles.logoutWrapper}>
 
             <PrimaryButton
@@ -392,27 +374,19 @@ const styles = StyleSheet.create({
     paddingBottom: 22,
   },
 
-  avatarWrapper: {
-    position: 'relative',
-  },
-
   avatar: {
     width: 92,
     height: 92,
-    borderRadius: 50,
-  },
-
-  editAvatarBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor:
-      COLORS.primary,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    borderRadius: 46,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  avatarLetter: {
+    color: COLORS.white,
+    fontSize: 38,
+    fontWeight: '900',
   },
 
   name: {

@@ -1,4 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+// screens/FavoritesScreen.js
+
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from 'react';
 
 import {
   View,
@@ -10,27 +17,43 @@ import {
   Easing,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
-import { useFocusEffect } from '@react-navigation/native';
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
 
 import MainLayout from '../components/MainLayout';
+
 import SalonCard from '../components/SalonCard';
+
 import FilterModal from '../components/FilterModal';
 
 import API from '../services/api';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
 import useFavorites from '../hooks/useFavorites';
 
-export default function FavoritesScreen({ navigation }) {
+export default function FavoritesScreen({
+  navigation,
+}) {
 
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters,
+    setShowFilters] =
+      useState(false);
 
-  const [favoritesData, setFavoritesData] = useState([]);
+  const [favoritesData,
+    setFavoritesData] =
+      useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading,
+    setLoading] =
+      useState(true);
 
   const {
     favorites,
@@ -38,7 +61,9 @@ export default function FavoritesScreen({ navigation }) {
   } = useFavorites();
 
   const slideAnim = useRef(
+
     new Animated.Value(-120)
+
   ).current;
 
   useEffect(() => {
@@ -48,8 +73,11 @@ export default function FavoritesScreen({ navigation }) {
       Animated.timing(slideAnim, {
 
         toValue: 320,
+
         duration: 1000,
+
         easing: Easing.linear,
+
         useNativeDriver: true,
 
       })
@@ -59,38 +87,68 @@ export default function FavoritesScreen({ navigation }) {
   }, []);
 
   useFocusEffect(
+
     useCallback(() => {
-
-      const fetchFavorites = async () => {
-
-        try {
-
-          setLoading(true);
-
-          const response = await API.get('/favorites');
-
-          setFavoritesData(response.data);
-
-        } catch (error) {
-
-          console.log(error);
-
-        } finally {
-
-          setLoading(false);
-
-        }
-
-      };
 
       fetchFavorites();
 
-    }, [])
+    }, [favorites])
+
   );
+
+  const fetchFavorites =
+    async () => {
+
+      try {
+
+        setLoading(true);
+
+        const response =
+          await API.get(
+            '/favorites'
+          );
+
+        const formatted =
+
+          response.data
+
+            .filter(
+              item => item.serviceId
+            )
+
+            .map((item) => ({
+
+              ...item.salonId,
+
+              serviceData:
+                item.serviceId,
+
+              favoriteId:
+                item._id,
+
+            }));
+
+        setFavoritesData(
+          formatted
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
 
   return (
 
-    <MainLayout navigation={navigation}>
+    <MainLayout
+      navigation={navigation}
+    >
 
       <View style={styles.container}>
 
@@ -101,8 +159,12 @@ export default function FavoritesScreen({ navigation }) {
           </Text>
 
           <TouchableOpacity
+
             style={styles.filterBtn}
-            onPress={() => setShowFilters(true)}
+
+            onPress={() =>
+              setShowFilters(true)
+            }
           >
 
             <Ionicons
@@ -111,7 +173,9 @@ export default function FavoritesScreen({ navigation }) {
               color={COLORS.primary}
             />
 
-            <Text style={styles.filterText}>
+            <Text
+              style={styles.filterText}
+            >
               Filters
             </Text>
 
@@ -121,20 +185,32 @@ export default function FavoritesScreen({ navigation }) {
 
         {loading ? (
 
-          <View style={styles.loaderWrapper}>
+          <View
+            style={
+              styles.loaderWrapper
+            }
+          >
 
-            <View style={styles.loaderTrack}>
+            <View
+              style={
+                styles.loaderTrack
+              }
+            >
 
               <Animated.View
                 style={[
+
                   styles.loaderBar,
+
                   {
                     transform: [
                       {
-                        translateX: slideAnim,
+                        translateX:
+                          slideAnim,
                       },
                     ],
                   },
+
                 ]}
               />
 
@@ -152,12 +228,17 @@ export default function FavoritesScreen({ navigation }) {
               color="#C4B5FD"
             />
 
-            <Text style={styles.emptyTitle}>
+            <Text
+              style={styles.emptyTitle}
+            >
               No Favorites Yet
             </Text>
 
-            <Text style={styles.emptyText}>
-              Save salons you like for quick access.
+            <Text
+              style={styles.emptyText}
+            >
+              Save services you like
+              for quick access.
             </Text>
 
           </View>
@@ -165,38 +246,62 @@ export default function FavoritesScreen({ navigation }) {
         ) : (
 
           <FlatList
+
             data={favoritesData}
+
             renderItem={({ item }) => (
 
               <SalonCard
-                salon={item.salonId}
-                navigation={navigation}
-                favorites={favorites}
-                toggleFav={toggleFav}
+                salon={item}
+                navigation={
+                  navigation
+                }
+                favorites={
+                  favorites
+                }
+                toggleFav={
+                  toggleFav
+                }
               />
 
             )}
-            keyExtractor={(item) => item._id}
+
+            keyExtractor={(item) =>
+
+              item.favoriteId
+
+            }
+
             numColumns={2}
-            columnWrapperStyle={styles.row}
-            showsVerticalScrollIndicator={false}
+
+            columnWrapperStyle={
+              styles.row
+            }
+
+            showsVerticalScrollIndicator={
+              false
+            }
+
             contentContainerStyle={{
               paddingBottom: 120,
             }}
+
           />
 
         )}
 
         <FilterModal
           visible={showFilters}
-          onClose={() => setShowFilters(false)}
+          onClose={() =>
+            setShowFilters(false)
+          }
           checkedOption=""
           options={[
-            'Haircut',
-            'Spa',
+            'Hair',
             'Beard',
-            'Makeup',
             'Facial',
+            'Makeup',
+            'Spa',
           ]}
         />
 
@@ -212,14 +317,16 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
 
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     marginBottom: 22,
   },
@@ -233,7 +340,8 @@ const styles = StyleSheet.create({
   filterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor:
+      COLORS.card,
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 14,
@@ -247,7 +355,8 @@ const styles = StyleSheet.create({
   },
 
   row: {
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     marginBottom: 14,
   },
 
@@ -259,7 +368,8 @@ const styles = StyleSheet.create({
   loaderTrack: {
     width: '85%',
     height: 5,
-    backgroundColor: '#DDD6FE',
+    backgroundColor:
+      '#DDD6FE',
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -267,7 +377,8 @@ const styles = StyleSheet.create({
   loaderBar: {
     width: 120,
     height: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
     borderRadius: 10,
   },
 

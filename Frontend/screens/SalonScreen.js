@@ -1,4 +1,9 @@
-import { useState } from 'react';
+// screens/SalonScreen.js
+
+import {
+  useState,
+  useEffect,
+} from 'react';
 
 import API from '../services/api';
 
@@ -31,12 +36,17 @@ import {
 } from '../constants/colors';
 
 export default function SalonScreen({
+
   route,
   navigation,
+
 }) {
 
   const { salon } =
     route.params;
+
+  const service =
+    salon.serviceData;
 
   const [selectedTime,
     setSelectedTime] =
@@ -58,31 +68,98 @@ export default function SalonScreen({
     setLoading] =
       useState(false);
 
-  const times = [
+  const [slots,
+    setSlots] =
+      useState([]);
+
+  const [bookedSlots,
+    setBookedSlots] =
+      useState([]);
+
+  const [blockedSlots,
+    setBlockedSlots] =
+      useState([]);
+
+  useEffect(() => {
+
+    fetchSlots();
+
+  }, [selectedDate]);
+  const formatLocalDate =
+  (date) => {
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, '0');
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+
+  };
+
+  const fetchSlots =
+    async () => {
+
+      try {
+
+        const bookingDate =
+        formatLocalDate(
+          selectedDate
+        );
+        const response =
+          await API.get(
+
+            `/salons/${salon._id}/service/${service._id}/slots?date=${date}`
+
+          );
+
+        setSlots(
+          response.data
+            .availableSlots
+        );
+
+        setBookedSlots(
+          response.data
+            .bookedSlots
+        );
+
+        setBlockedSlots(
+          response.data
+            .blockedSlots
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+  const allSlots = [
 
     '10:00 am',
     '10:30 am',
+    '11:00 am',
+    '11:30 am',
     '12:00 pm',
     '12:30 pm',
+    '1:00 pm',
+    '1:30 pm',
     '4:00 pm',
     '4:30 pm',
     '5:00 pm',
     '5:30 pm',
 
   ];
-
-  const onChangeDate = (
-    event,
-    selected
-  ) => {
-
-    if (selected) {
-
-      setSelectedDate(selected);
-
-    }
-
-  };
 
   const handleBooking =
     async () => {
@@ -92,8 +169,8 @@ export default function SalonScreen({
         if (!selectedTime) {
 
           Alert.alert(
-            'Select Time',
-            'Please select a booking time'
+            'Select Slot',
+            'Please select a slot'
           );
 
           return;
@@ -103,74 +180,37 @@ export default function SalonScreen({
         setLoading(true);
 
         const bookingDate =
-          new Date(selectedDate);
+        formatLocalDate(
+          selectedDate
+        );
 
-        const time =
-          selectedTime.toLowerCase();
+        await API.post(
+          '/bookings',
+          {
 
-        let hours =
-          parseInt(
-            time.split(':')[0]
-          );
+            salonId:
+              salon._id,
 
-        const minutePart =
-          time.split(':')[1];
+            serviceId:
+              service._id,
 
-        const minutes =
-          parseInt(
-            minutePart
-          );
+            bookingDate,
 
-        if (
-          time.includes('pm') &&
-          hours !== 12
-        ) {
+            bookingTime:
+              selectedTime,
 
-          hours += 12;
-
-        }
-
-        if (
-          time.includes('am') &&
-          hours === 12
-        ) {
-
-          hours = 0;
-
-        }
-
-        bookingDate.setHours(hours);
-
-        bookingDate.setMinutes(minutes);
-
-        bookingDate.setSeconds(0);
-
-        const response =
-          await API.post(
-            '/bookings',
-            {
-              salonId: salon._id,
-              bookingDate,
-            }
-          );
-
-        console.log(
-          'BOOKED:',
-          response.data
+          }
         );
 
         setBooked(true);
 
       } catch (error) {
 
-        console.log(
-          error.response?.data || error
-        );
-
         Alert.alert(
           'Booking Failed',
-          error.response?.data?.message ||
-          'Something went wrong'
+          JSON.stringify(
+            error.response?.data || error.message
+          )
         );
 
       } finally {
@@ -189,12 +229,13 @@ export default function SalonScreen({
         showsVerticalScrollIndicator={false}
       >
 
-        {/* IMAGE */}
         <View>
 
           <Image
             source={{
-              uri: salon.image,
+              uri:
+                service.image ||
+                salon.image,
             }}
             style={styles.image}
           />
@@ -215,23 +256,28 @@ export default function SalonScreen({
 
         </View>
 
-        {/* CONTENT */}
         <View style={styles.container}>
 
           <View style={styles.titleRow}>
 
-            <Text style={styles.title}>
-              {salon.name}
-            </Text>
+            <View>
+
+              <Text style={styles.title}>
+                {service.name}
+              </Text>
+
+              <Text style={styles.salonName}>
+                {salon.name}
+              </Text>
+
+            </View>
 
             <View style={styles.rating}>
 
               <Ionicons
                 name="star"
                 size={14}
-                color={
-                  COLORS.warning
-                }
+                color="#F59E0B"
               />
 
               <Text
@@ -239,18 +285,22 @@ export default function SalonScreen({
                   styles.ratingText
                 }
               >
-                {salon.rating}
+                {service.averageRating
+                  ?.toFixed(1) || '0.0'}
               </Text>
 
             </View>
 
           </View>
 
-          <Text style={styles.desc}>
-            {salon.service}
-          </Text>
+          <View style={styles.priceChip}>
 
-          {/* LOCATION */}
+            <Text style={styles.priceText}>
+              ₹{service.price}
+            </Text>
+
+          </View>
+
           <TouchableOpacity
             style={
               styles.locationRow
@@ -272,12 +322,12 @@ export default function SalonScreen({
                 styles.locationText
               }
             >
-              BMSCE Bangalore
+              {salon.address ||
+                'Bangalore'}
             </Text>
 
           </TouchableOpacity>
 
-          {/* DATE */}
           <Text style={styles.section}>
             Date
           </Text>
@@ -299,17 +349,33 @@ export default function SalonScreen({
 
           </TouchableOpacity>
 
-          {/* DATE PICKER */}
           {showPicker && (
 
             <View style={styles.pickerWrapper}>
 
               <DateTimePicker
-                value={selectedDate}
+                value={
+                  selectedDate
+                }
                 mode="date"
                 display="spinner"
-                minimumDate={new Date()}
-                onChange={onChangeDate}
+                minimumDate={
+                  new Date()
+                }
+                onChange={(
+                  event,
+                  selected
+                ) => {
+
+                  if (selected) {
+
+                    setSelectedDate(
+                      selected
+                    );
+
+                  }
+
+                }}
               />
 
               <TouchableOpacity
@@ -327,69 +393,130 @@ export default function SalonScreen({
 
             </View>
 
-          )}
+            )}
 
-          {/* TIMES */}
           <Text style={styles.section}>
-            Available times
+            Available Slots
           </Text>
 
           <View style={styles.timeGrid}>
 
-            {times.map((t) => (
+            {allSlots.map((slot) => {
 
-              <TouchableOpacity
-                key={t}
-                style={[
-                  styles.timeBtn,
+              const isBooked =
+                bookedSlots.includes(
+                  slot
+                );
 
-                  selectedTime === t &&
-                  styles.activeTime,
-                ]}
-                onPress={() =>
-                  setSelectedTime(t)
-                }
-              >
+              const isBlocked =
+                blockedSlots.includes(
+                  slot
+                );
 
-                <Text
+              const isAvailable =
+                slots.includes(
+                  slot
+                );
+
+              return (
+
+                <TouchableOpacity
+
+                  key={slot}
+
+                  disabled={
+                    !isAvailable
+                  }
+
                   style={[
-                    styles.timeText,
 
-                    selectedTime === t &&
-                    styles.activeTimeText,
+                    styles.timeBtn,
+
+                    selectedTime ===
+                      slot &&
+                      styles.activeTime,
+
+                    isBooked &&
+                      styles.bookedSlot,
+
+                    isBlocked &&
+                      styles.blockedSlot,
+
                   ]}
+
+                  onPress={() =>
+                    setSelectedTime(
+                      slot
+                    )
+                  }
                 >
-                  {t}
-                </Text>
 
-              </TouchableOpacity>
+                  <Text
+                    style={[
 
-            ))}
+                      styles.timeText,
+
+                      selectedTime ===
+                        slot &&
+                        styles.activeTimeText,
+
+                    ]}
+                  >
+                    {slot}
+                  </Text>
+
+                </TouchableOpacity>
+
+              );
+
+            })}
 
           </View>
 
-          {/* BILL */}
-          <Text style={styles.section}>
-            Bill Detail
-          </Text>
+          <View style={styles.legendRow}>
 
-          <View style={styles.billRow}>
-
-            <Text>
-              Service Amount
-            </Text>
-
-            <Text
-              style={
-                styles.billAmount
-              }
+            <View
+              style={styles.legendItem}
             >
-              ₹{salon.price}
-            </Text>
+
+              <View
+                style={[
+                  styles.legendColor,
+                  {
+                    backgroundColor:
+                      '#D1D5DB',
+                  },
+                ]}
+              />
+
+              <Text>
+                Booked
+              </Text>
+
+            </View>
+
+            <View
+              style={styles.legendItem}
+            >
+
+              <View
+                style={[
+                  styles.legendColor,
+                  {
+                    backgroundColor:
+                      '#FCA5A5',
+                  },
+                ]}
+              />
+
+              <Text>
+                Blocked
+              </Text>
+
+            </View>
 
           </View>
 
-          {/* BOOK BUTTON */}
           <PrimaryButton
             title={
               loading
@@ -411,7 +538,6 @@ export default function SalonScreen({
 
       </ScrollView>
 
-      {/* SUCCESS MODAL */}
       <SuccessModal
         visible={booked}
         title="Booking Confirmed"
@@ -419,7 +545,9 @@ export default function SalonScreen({
 
           setBooked(false);
 
-          navigation.navigate('Home');
+          navigation.navigate(
+            'Bookings'
+          );
 
         }}
       />
@@ -440,7 +568,7 @@ const styles = StyleSheet.create({
 
   image: {
     width: '100%',
-    height: 220,
+    height: 240,
   },
 
   backBtn: {
@@ -461,12 +589,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent:
       'space-between',
+    alignItems: 'center',
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     color: COLORS.text,
+  },
+
+  salonName: {
+    marginTop: 5,
+    color: COLORS.gray,
   },
 
   rating: {
@@ -475,31 +609,40 @@ const styles = StyleSheet.create({
   },
 
   ratingText: {
-    marginLeft: 4,
+    marginLeft: 5,
+    fontWeight: '700',
   },
 
-  desc: {
-    color: COLORS.gray,
-    marginBottom: 15,
-    fontSize: 14,
-    fontWeight: '500',
+  priceChip: {
+    alignSelf: 'flex-start',
+    backgroundColor:
+      COLORS.card,
+    marginTop: 14,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+
+  priceText: {
+    fontWeight: '800',
+    color: COLORS.primary,
   },
 
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 20,
     marginBottom: 20,
   },
 
   locationText: {
     marginLeft: 8,
-    fontSize: 16,
     fontWeight: '600',
   },
 
   section: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
     marginBottom: 10,
     color: COLORS.text,
   },
@@ -508,35 +651,13 @@ const styles = StyleSheet.create({
     backgroundColor:
       COLORS.card,
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
   },
 
   dateText: {
-    fontWeight: '600',
-  },
-
-  pickerWrapper: {
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    paddingVertical: 10,
-    marginBottom: 20,
-  },
-
-  doneBtn: {
-    marginTop: 10,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 28,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-
-  doneText: {
-    color: COLORS.white,
     fontWeight: '700',
-    fontSize: 14,
   },
 
   timeGrid: {
@@ -544,15 +665,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent:
       'space-between',
+    marginBottom: 20,
   },
 
   timeBtn: {
     width: '47%',
-    padding: 12,
-    borderRadius: 20,
+    paddingVertical: 14,
+    borderRadius: 18,
     backgroundColor:
-      COLORS.card,
-    marginBottom: 10,
+      '#EDE9FE',
+    marginBottom: 12,
     alignItems: 'center',
   },
 
@@ -563,23 +685,61 @@ const styles = StyleSheet.create({
 
   activeTimeText: {
     color: COLORS.white,
+    fontWeight: '700',
+  },
+
+  bookedSlot: {
+    backgroundColor:
+      '#D1D5DB',
+  },
+
+  blockedSlot: {
+    backgroundColor:
+      '#FCA5A5',
   },
 
   timeText: {
-    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
   },
 
-  billRow: {
+  legendRow: {
     flexDirection: 'row',
-    justifyContent:
-      'space-between',
     marginBottom: 20,
-    marginTop: 10,
   },
 
-  billAmount: {
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+
+  legendColor: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginRight: 6,
+  },
+  pickerWrapper: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    paddingVertical: 10,
+    marginBottom: 20,
+  },
+  
+  doneBtn: {
+    marginTop: 10,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 28,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  
+  doneText: {
+    color: COLORS.white,
     fontWeight: '700',
-    color: COLORS.primary,
+    fontSize: 14,
   },
 
 });

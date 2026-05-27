@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Linking,
   ScrollView,
+  Alert,
 } from 'react-native';
 
 import {
@@ -23,56 +24,119 @@ export default function HelpCenterScreen({
   navigation,
 }) {
 
-  const supportOptions = [
+  const handleCall = async () => {
 
-    {
-      icon: 'call',
-      iconColor: COLORS.primary,
-      title: 'Call Support',
-      subtitle: '+91 9876543210',
-      action: () =>
-        Linking.openURL(
-          'tel:+919876543210'
-        ),
-    },
+    const supported =
+      await Linking.canOpenURL(
+        'tel:+919876543210'
+      );
 
-    {
-      icon: 'logo-whatsapp',
-      iconColor: '#22C55E',
-      title: 'WhatsApp Support',
-      subtitle:
-        'Chat instantly with support',
-      action: () =>
-        Linking.openURL(
-          'https://wa.me/919876543210'
-        ),
-    },
+    if (supported) {
 
-    {
-      icon: 'mail',
-      iconColor: '#2563EB',
-      title: 'Email Support',
-      subtitle:
-        'support@slotify.com',
-      action: () =>
-        Linking.openURL(
-          'mailto:support@slotify.com'
-        ),
-    },
+      Linking.openURL(
+        'tel:+919876543210'
+      );
 
-  ];
+    } else {
+
+      Alert.alert(
+        'Error',
+        'Calling is not supported'
+      );
+
+    }
+
+  };
+
+  const handleWhatsApp =
+    async () => {
+
+      const url =
+        'https://wa.me/919876543210';
+
+      const supported =
+        await Linking.canOpenURL(
+          url
+        );
+
+      if (supported) {
+
+        Linking.openURL(url);
+
+      } else {
+
+        Alert.alert(
+          'Error',
+          'WhatsApp not installed'
+        );
+
+      }
+
+    };
+
+  const handleEmail =
+    async () => {
+
+      const url =
+        'mailto:support@slotify.com';
+
+      const supported =
+        await Linking.canOpenURL(
+          url
+        );
+
+      if (supported) {
+
+        Linking.openURL(url);
+
+      } else {
+
+        Alert.alert(
+          'Error',
+          'Email app not available'
+        );
+
+      }
+
+    };
 
   const faqs = [
 
-    'How to cancel a booking?',
+    {
+      question:
+        'How to cancel a booking?',
 
-    'How to reschedule an appointment?',
+      answer:
+        'Go to My Bookings and tap Cancel Booking.',
 
-    'How to contact a salon?',
+    },
 
-    'How to request a refund?',
+    {
+      question:
+        'How to reschedule an appointment?',
 
-    'How to update my profile?',
+      answer:
+        'Cancel the old booking and create a new one.',
+
+    },
+
+    {
+      question:
+        'How to contact a salon?',
+
+      answer:
+        'Open the salon page and use Navigate or WhatsApp.',
+
+    },
+
+    {
+      question:
+        'How to update my profile?',
+
+      answer:
+        'Go to Profile → Edit Profile.',
+
+    },
 
   ];
 
@@ -89,7 +153,6 @@ export default function HelpCenterScreen({
         }}
       >
 
-        {/* HEADER */}
         <View style={styles.headerRow}>
 
           <TouchableOpacity
@@ -119,7 +182,6 @@ export default function HelpCenterScreen({
 
         </View>
 
-        {/* HERO */}
         <View style={styles.heroCard}>
 
           <Ionicons
@@ -129,77 +191,163 @@ export default function HelpCenterScreen({
           />
 
           <Text style={styles.heroTitle}>
-            How can we help you?
+            Need Help?
           </Text>
 
           <Text style={styles.heroText}>
-            Our support team is here
-            to assist you anytime.
+            Contact support anytime.
           </Text>
 
         </View>
 
-        {/* SUPPORT OPTIONS */}
         <Text style={styles.sectionTitle}>
           Contact Support
         </Text>
 
-        {supportOptions.map(
-          (item, index) => (
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.9}
+          onPress={handleCall}
+        >
 
-            <TouchableOpacity
-              key={index}
-              style={styles.card}
-              activeOpacity={0.9}
-              onPress={item.action}
+          <View
+            style={[
+              styles.iconBox,
+              {
+                backgroundColor:
+                  '#EEE8FF',
+              },
+            ]}
+          >
+
+            <Ionicons
+              name="call"
+              size={22}
+              color={COLORS.primary}
+            />
+
+          </View>
+
+          <View style={styles.content}>
+
+            <Text style={styles.title}>
+              Call Support
+            </Text>
+
+            <Text
+              style={styles.subtitle}
             >
+              +91 9876543210
+            </Text>
 
-              <View
-                style={[
-                  styles.iconBox,
-                  {
-                    backgroundColor:
-                      `${item.iconColor}15`,
-                  },
-                ]}
-              >
+          </View>
 
-                <Ionicons
-                  name={item.icon}
-                  size={22}
-                  color={item.iconColor}
-                />
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={
+              COLORS.lightGray
+            }
+          />
 
-              </View>
+        </TouchableOpacity>
 
-              <View style={styles.content}>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.9}
+          onPress={handleWhatsApp}
+        >
 
-                <Text style={styles.title}>
-                  {item.title}
-                </Text>
+          <View
+            style={[
+              styles.iconBox,
+              {
+                backgroundColor:
+                  '#DCFCE7',
+              },
+            ]}
+          >
 
-                <Text
-                  style={styles.subtitle}
-                >
-                  {item.subtitle}
-                </Text>
+            <Ionicons
+              name="logo-whatsapp"
+              size={22}
+              color="#22C55E"
+            />
 
-              </View>
+          </View>
 
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={
-                  COLORS.lightGray
-                }
-              />
+          <View style={styles.content}>
 
-            </TouchableOpacity>
+            <Text style={styles.title}>
+              WhatsApp Support
+            </Text>
 
-          )
-        )}
+            <Text
+              style={styles.subtitle}
+            >
+              Chat with support
+            </Text>
 
-        {/* FAQ */}
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={
+              COLORS.lightGray
+            }
+          />
+
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.9}
+          onPress={handleEmail}
+        >
+
+          <View
+            style={[
+              styles.iconBox,
+              {
+                backgroundColor:
+                  '#DBEAFE',
+              },
+            ]}
+          >
+
+            <Ionicons
+              name="mail"
+              size={22}
+              color="#2563EB"
+            />
+
+          </View>
+
+          <View style={styles.content}>
+
+            <Text style={styles.title}>
+              Email Support
+            </Text>
+
+            <Text
+              style={styles.subtitle}
+            >
+              support@slotify.com
+            </Text>
+
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={
+              COLORS.lightGray
+            }
+          />
+
+        </TouchableOpacity>
+
         <View style={styles.faqCard}>
 
           <View style={styles.faqHeader}>
@@ -211,7 +359,7 @@ export default function HelpCenterScreen({
             />
 
             <Text style={styles.faqTitle}>
-              Frequently Asked Questions
+              FAQs
             </Text>
 
           </View>
@@ -219,26 +367,24 @@ export default function HelpCenterScreen({
           {faqs.map(
             (faq, index) => (
 
-              <TouchableOpacity
+              <View
                 key={index}
                 style={styles.faqItem}
               >
 
                 <Text
-                  style={styles.faqText}
+                  style={styles.faqQuestion}
                 >
-                  {faq}
+                  {faq.question}
                 </Text>
 
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={
-                    COLORS.lightGray
-                  }
-                />
+                <Text
+                  style={styles.faqAnswer}
+                >
+                  {faq.answer}
+                </Text>
 
-              </TouchableOpacity>
+              </View>
 
             )
           )}
@@ -309,7 +455,6 @@ const styles = StyleSheet.create({
     color: COLORS.gray,
     textAlign: 'center',
     marginTop: 8,
-    lineHeight: 20,
   },
 
   sectionTitle: {
@@ -377,19 +522,22 @@ const styles = StyleSheet.create({
   },
 
   faqItem: {
-    flexDirection: 'row',
-    justifyContent:
-      'space-between',
-    alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F2',
   },
 
-  faqText: {
-    fontSize: 13,
+  faqQuestion: {
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.text,
-    fontWeight: '500',
+    marginBottom: 6,
+  },
+
+  faqAnswer: {
+    fontSize: 12,
+    color: COLORS.gray,
+    lineHeight: 18,
   },
 
 });

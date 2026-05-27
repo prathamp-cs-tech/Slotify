@@ -1,98 +1,145 @@
+// components/SalonCard.js
+
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
 export default function SalonCard({
+
   salon,
   navigation,
-  favorites = {},
-  toggleFav = () => {},
+  favorites = [],
+  toggleFav,
+
 }) {
 
-  const liked = favorites[salon._id];
+  const service =
+    salon.serviceData;
+
+  const isFav =
+    Array.isArray(favorites)
+
+      ? favorites.includes(
+          service._id
+        )
+
+      : false;
 
   return (
 
     <TouchableOpacity
+
       style={styles.card}
-      activeOpacity={0.9}
+
       onPress={() =>
-        navigation.navigate('Salon', {
-          salon,
-        })
+
+        navigation.navigate(
+          'Salon',
+          {
+            salon,
+          }
+        )
+
       }
     >
 
-      <View>
+      <Image
+        source={{
+          uri:
+            service.image ||
+            salon.image,
+        }}
+        style={styles.image}
+      />
 
-        <Image
-          source={{ uri: salon.image }}
-          style={styles.image}
+      <TouchableOpacity
+
+        style={styles.favBtn}
+
+        onPress={() =>
+
+          toggleFav &&
+          toggleFav(salon)
+
+        }
+      >
+
+        <Ionicons
+
+          name={
+            isFav
+              ? 'heart'
+              : 'heart-outline'
+          }
+
+          size={16}
+
+          color={
+            isFav
+              ? '#EF4444'
+              : COLORS.text
+          }
+
         />
 
-        <TouchableOpacity
-          style={styles.heart}
-          onPress={() => toggleFav(salon._id)}
-        >
+      </TouchableOpacity>
 
-          <Ionicons
-            name={
-              liked
-                ? 'heart'
-                : 'heart-outline'
-            }
-            size={16}
-            color={
-              liked
-                ? COLORS.primary
-                : '#333'
-            }
-          />
-
-        </TouchableOpacity>
-
-      </View>
-
-      <View style={styles.cardBody}>
+      <View style={styles.content}>
 
         <Text
-          style={styles.name}
           numberOfLines={1}
+          style={styles.serviceName}
+        >
+          {service.name}
+        </Text>
+
+        <Text
+          numberOfLines={1}
+          style={styles.salonName}
         >
           {salon.name}
         </Text>
 
-        <Text style={styles.service}>
-          {salon.service}
-        </Text>
-
         <View style={styles.row}>
-
-          <Text style={styles.price}>
-            ₹{salon.price}
-          </Text>
 
           <View style={styles.ratingRow}>
 
             <Ionicons
               name="star"
-              size={12}
-              color={COLORS.warning}
+              size={13}
+              color="#F59E0B"
             />
 
             <Text style={styles.rating}>
-              {salon.rating}
+              {service.averageRating
+                ?.toFixed(1) || '0.0'}
             </Text>
 
           </View>
+
+          <Text style={styles.price}>
+            ₹{service.price}
+          </Text>
+
+        </View>
+
+        <View style={styles.categoryChip}>
+
+          <Text style={styles.categoryText}>
+            {service.category}
+          </Text>
 
         </View>
 
@@ -108,59 +155,53 @@ const styles = StyleSheet.create({
 
   card: {
     width: '48%',
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    marginBottom: 15,
-    marginTop: 10,
+    backgroundColor:
+      COLORS.white,
+    borderRadius: 18,
+    marginBottom: 16,
+    overflow: 'hidden',
   },
 
   image: {
     width: '100%',
-    height: 110,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    height: 120,
   },
 
-  heart: {
+  favBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: COLORS.white,
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor:
+      'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  cardBody: {
-    padding: 10,
+  content: {
+    padding: 12,
   },
 
-  name: {
+  serviceName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
     color: COLORS.text,
   },
 
-  service: {
+  salonName: {
     fontSize: 12,
     color: COLORS.gray,
-    marginTop: 4,
-    marginBottom: 8,
-    fontWeight: '500',
+    marginTop: 3,
   },
 
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 5,
-  },
-
-  price: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primary,
+    justifyContent:
+      'space-between',
+    alignItems: 'center',
+    marginTop: 10,
   },
 
   ratingRow: {
@@ -169,9 +210,32 @@ const styles = StyleSheet.create({
   },
 
   rating: {
-    marginLeft: 3,
+    marginLeft: 4,
     fontSize: 12,
-    color: '#555',
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+
+  price: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+
+  categoryChip: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    backgroundColor:
+      COLORS.card,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+
+  categoryText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
 
 });

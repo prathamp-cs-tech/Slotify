@@ -9,7 +9,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Image,
   ScrollView,
   Alert,
 } from 'react-native';
@@ -175,7 +174,6 @@ export default function EditProfileScreen({
         }}
       >
 
-        {/* HEADER */}
         <View style={styles.headerRow}>
 
           <TouchableOpacity
@@ -205,43 +203,24 @@ export default function EditProfileScreen({
 
         </View>
 
-        {/* PROFILE IMAGE */}
         <View style={styles.imageSection}>
 
-          <View style={styles.avatarWrapper}>
+          <View style={styles.avatar}>
 
-            <Image
-              source={{
-                uri:
-                  'https://randomuser.me/api/portraits/men/32.jpg',
-              }}
-              style={styles.avatar}
-            />
+            <Text style={styles.avatarLetter}>
 
-            <TouchableOpacity
-              style={styles.cameraBtn}
-            >
+              {name
+                ? name.charAt(0).toUpperCase()
+                : 'U'}
 
-              <Ionicons
-                name="camera"
-                size={16}
-                color={COLORS.white}
-              />
-
-            </TouchableOpacity>
+            </Text>
 
           </View>
 
-          <Text style={styles.changePhoto}>
-            Change Photo
-          </Text>
-
         </View>
 
-        {/* FORM */}
         <View style={styles.formCard}>
 
-          {/* NAME */}
           <View style={styles.inputGroup}>
 
             <Text style={styles.label}>
@@ -268,7 +247,6 @@ export default function EditProfileScreen({
 
           </View>
 
-          {/* EMAIL */}
           <View style={styles.inputGroup}>
 
             <Text style={styles.label}>
@@ -297,7 +275,6 @@ export default function EditProfileScreen({
 
           </View>
 
-          {/* PHONE */}
           <View style={styles.inputGroup}>
 
             <Text style={styles.label}>
@@ -325,7 +302,6 @@ export default function EditProfileScreen({
 
           </View>
 
-          {/* LOCATION */}
           <View style={styles.inputGroup}>
 
             <Text style={styles.label}>
@@ -354,7 +330,6 @@ export default function EditProfileScreen({
 
         </View>
 
-        {/* BUTTON */}
         <View style={styles.buttonWrapper}>
 
           <PrimaryButton
@@ -370,7 +345,6 @@ export default function EditProfileScreen({
 
       </ScrollView>
 
-      {/* SUCCESS MODAL */}
       <SuccessModal
         visible={saved}
         title="Profile Updated"
@@ -428,37 +402,19 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
 
-  avatarWrapper: {
-    position: 'relative',
-  },
-
   avatar: {
     width: 110,
     height: 110,
     borderRadius: 55,
-  },
-
-  cameraBtn: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor:
-      COLORS.primary,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor:
-      COLORS.background,
   },
 
-  changePhoto: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
+  avatarLetter: {
+    color: COLORS.white,
+    fontSize: 42,
+    fontWeight: '900',
   },
 
   formCard: {

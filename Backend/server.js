@@ -35,6 +35,16 @@ app.use(
   require('./routes/salonRoutes')
 );
 
+app.use(
+    '/api/provider',
+    require('./routes/providerRoutes')
+);
+
+  app.use(
+    '/api/favorites',
+    require('./routes/favoriteRoutes')
+);
+
 const PORT =
   process.env.PORT || 3001;
 

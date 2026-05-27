@@ -1,7 +1,33 @@
 export const CATEGORIES = [
-  { id: '1', icon: 'content-cut', label: 'Haircut' },
-  { id: '2', icon: 'face-woman', label: 'Facial' },
-  { id: '3', icon: 'spa', label: 'Spa' },
-  { id: '4', icon: 'brush', label: 'Makeup' },
-  { id: '5', icon: 'mustache', label: 'Beard' },
+
+  {
+    id: 1,
+    label: 'Hair',
+    icon: 'content-cut',
+  },
+
+  {
+    id: 2,
+    label: 'Beard',
+    icon: 'face-man',
+  },
+
+  {
+    id: 3,
+    label: 'Facial',
+    icon: 'face-woman',
+  },
+
+  {
+    id: 4,
+    label: 'Makeup',
+    icon: 'brush',
+  },
+
+  {
+    id: 5,
+    label: 'Spa',
+    icon: 'spa',
+  },
+
 ];

@@ -1,97 +1,160 @@
-import { useState, useCallback } from 'react';
-
-import { useFocusEffect } from '@react-navigation/native';
-
-import API from '../services/api';
-
-export default function useFavorites() {
-
-  const [favorites, setFavorites] = useState({});
-
-  const [loadingFavorites, setLoadingFavorites] = useState(true);
-
-  const fetchFavorites = async () => {
-
-    try {
-
-      const response = await API.get('/favorites');
-
-      const favMap = {};
-
-      response.data.forEach(item => {
-
-        favMap[item.salonId._id] = true;
-
-      });
-
-      setFavorites(favMap);
-
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoadingFavorites(false);
-
-    }
-
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-
-      fetchFavorites();
-
-    }, [])
-  );
-
-  const toggleFav = async (id) => {
-
-    try {
-
-      if (favorites[id]) {
-
-        await API.delete(`/favorites/${id}`);
-
-        setFavorites(prev => {
-
-          const updated = {
-            ...prev,
-          };
-
-          delete updated[id];
-
-          return updated;
-
-        });
-
-      } else {
-
-        await API.post('/favorites', {
-          salonId: id,
-        });
-
-        setFavorites(prev => ({
-          ...prev,
-          [id]: true,
-        }));
-
-      }
-
-    } catch (error) {
-
-      console.log(error);
-
-    }
-
-  };
-
-  return {
-    favorites,
-    toggleFav,
-    loadingFavorites,
-    fetchFavorites,
-  };
-
-}
+import {
+    useEffect,
+    useState,
+  } from 'react';
+  
+  import AsyncStorage from '@react-native-async-storage/async-storage';
+  
+  import API from '../services/api';
+  
+  export default function useFavorites() {
+  
+    const [favorites,
+      setFavorites] =
+        useState([]);
+  
+    useEffect(() => {
+  
+      loadFavorites();
+  
+    }, []);
+  
+    const loadFavorites =
+      async () => {
+  
+        try {
+  
+          const response =
+            await API.get(
+              '/favorites'
+            );
+  
+          const ids =
+            response.data
+  
+              .map(item =>
+  
+                item.serviceId?._id
+  
+              )
+  
+              .filter(Boolean);
+  
+          setFavorites(ids);
+  
+          await AsyncStorage.setItem(
+  
+            'favorites',
+  
+            JSON.stringify(ids)
+  
+          );
+  
+        } catch (error) {
+  
+          console.log(error);
+  
+        }
+  
+      };
+  
+    const toggleFav =
+      async (salon) => {
+  
+        try {
+  
+          const serviceId =
+            salon.serviceData._id;
+  
+          let updated = [];
+  
+          if (
+            favorites.includes(
+              serviceId
+            )
+          ) {
+  
+            const response =
+              await API.get(
+                '/favorites'
+              );
+  
+            const favorite =
+              response.data.find(
+  
+                item =>
+  
+                  item.serviceId?._id ===
+                  serviceId
+  
+              );
+  
+            if (favorite) {
+  
+              await API.delete(
+  
+                `/favorites/${favorite._id}`
+  
+              );
+  
+            }
+  
+            updated =
+              favorites.filter(
+  
+                item =>
+                  item !== serviceId
+  
+              );
+  
+          } else {
+  
+            await API.post(
+              '/favorites',
+              {
+  
+                salonId:
+                  salon._id,
+  
+                serviceId,
+  
+              }
+            );
+  
+            updated = [
+  
+              ...favorites,
+  
+              serviceId,
+  
+            ];
+  
+          }
+  
+          setFavorites(updated);
+  
+          await AsyncStorage.setItem(
+  
+            'favorites',
+  
+            JSON.stringify(updated)
+  
+          );
+  
+        } catch (error) {
+  
+          console.log(error);
+  
+        }
+  
+      };
+  
+    return {
+  
+      favorites,
+  
+      toggleFav,
+  
+    };
+  
+  }

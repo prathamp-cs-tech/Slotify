@@ -1,4 +1,9 @@
-import { useState, useEffect } from 'react';
+// screens/CategoryScreen.js
+
+import {
+  useState,
+  useCallback,
+} from 'react';
 
 import {
   View,
@@ -6,13 +11,18 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Animated,
-  Easing,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
+
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
 import MainLayout from '../components/MainLayout';
+
 import SalonCard from '../components/SalonCard';
 
 import API from '../services/api';
@@ -21,55 +31,92 @@ import { COLORS } from '../constants/colors';
 
 import useFavorites from '../hooks/useFavorites';
 
-export default function CategoryScreen({ route, navigation }) {
+export default function CategoryScreen({
 
-  const { category } = route.params;
+  route,
+  navigation,
 
-  const [salons, setSalons] = useState([]);
+}) {
 
-  const [loading, setLoading] = useState(true);
+  const { category } =
+    route.params;
+
+  const [services,
+    setServices] =
+      useState([]);
+
+  const [loading,
+    setLoading] =
+      useState(true);
 
   const {
     favorites,
     toggleFav,
   } = useFavorites();
 
-  const loaderAnim = useState(
-    new Animated.Value(-150)
-  )[0];
+  useFocusEffect(
 
-  useEffect(() => {
+    useCallback(() => {
 
-    Animated.loop(
+      fetchServices();
 
-      Animated.timing(loaderAnim, {
+    }, [])
 
-        toValue: 350,
-        duration: 1200,
-        easing: Easing.linear,
-        useNativeDriver: true,
+  );
 
-      })
-
-    ).start();
-
-  }, []);
-
-  useEffect(() => {
-
-    const fetchSalons = async () => {
+  const fetchServices =
+    async () => {
 
       try {
 
-        const response = await API.get('/salons');
+        setLoading(true);
 
-        const filtered = response.data.filter(
-          salon =>
-            salon.service.toLowerCase() ===
-            category.toLowerCase()
+        const response =
+          await API.get('/salons');
+
+        const flattened = [];
+
+        response.data.forEach(
+
+          (salon) => {
+
+            salon.services
+
+              .filter(
+
+                service =>
+
+                  service.category
+                    .toLowerCase() ===
+                  category
+                    .toLowerCase() &&
+
+                  service.isActive
+
+              )
+
+              .forEach(
+
+                (service) => {
+
+                  flattened.push({
+
+                    ...salon,
+
+                    serviceData:
+                      service,
+
+                  });
+
+                }
+
+              );
+
+          }
+
         );
 
-        setSalons(filtered);
+        setServices(flattened);
 
       } catch (error) {
 
@@ -83,13 +130,11 @@ export default function CategoryScreen({ route, navigation }) {
 
     };
 
-    fetchSalons();
-
-  }, []);
-
   return (
 
-    <MainLayout navigation={navigation}>
+    <MainLayout
+      navigation={navigation}
+    >
 
       <View style={styles.container}>
 
@@ -99,7 +144,9 @@ export default function CategoryScreen({ route, navigation }) {
             {category}
           </Text>
 
-          <TouchableOpacity style={styles.filterBtn}>
+          <TouchableOpacity
+            style={styles.filterBtn}
+          >
 
             <Ionicons
               name="options-outline"
@@ -107,68 +154,56 @@ export default function CategoryScreen({ route, navigation }) {
               color={COLORS.primary}
             />
 
-            <Text style={styles.filterText}>
-              Filters
-            </Text>
-
           </TouchableOpacity>
 
         </View>
 
-        {loading && (
-
-          <View style={styles.loaderWrapper}>
-
-            <View style={styles.loaderTrack}>
-
-              <Animated.View
-                style={[
-                  styles.loaderBar,
-                  {
-                    transform: [
-                      {
-                        translateX: loaderAnim,
-                      },
-                    ],
-                  },
-                ]}
-              />
-
-            </View>
-
-          </View>
-
-        )}
-
-        {!loading && salons.length === 0 && (
-
-          <Text style={styles.emptyText}>
-            No salons found
-          </Text>
-
-        )}
-
-        {!loading && salons.length > 0 && (
+        {!loading && (
 
           <FlatList
-            data={salons}
-            keyExtractor={(item) => item._id}
+
+            data={services}
+
+            keyExtractor={(item) =>
+
+              `${item._id}-${item.serviceData._id}`
+
+            }
+
             numColumns={2}
+
+            columnWrapperStyle={
+              styles.row
+            }
+
             showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.row}
+
             contentContainerStyle={{
               paddingBottom: 120,
             }}
+
             renderItem={({ item }) => (
 
               <SalonCard
+
                 salon={item}
-                navigation={navigation}
-                favorites={favorites}
-                toggleFav={toggleFav}
+
+                navigation={
+                  navigation
+                }
+
+                favorites={
+                  favorites
+                }
+
+                toggleFav={
+                  toggleFav
+                }
+
               />
 
             )}
+
           />
 
         )}
@@ -185,71 +220,40 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     marginBottom: 25,
   },
 
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     color: COLORS.text,
   },
 
   filterBtn: {
-    flexDirection: 'row',
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor:
+      COLORS.card,
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
-  },
-
-  filterText: {
-    marginLeft: 7,
-    color: COLORS.primary,
-    fontWeight: '700',
-    fontSize: 14,
   },
 
   row: {
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     marginBottom: 14,
-  },
-
-  loaderWrapper: {
-    marginTop: 40,
-    alignItems: 'center',
-  },
-
-  loaderTrack: {
-    width: '90%',
-    height: 5,
-    backgroundColor: '#DDD6FE',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-
-  loaderBar: {
-    width: 150,
-    height: 5,
-    backgroundColor: COLORS.primary,
-    borderRadius: 10,
-  },
-
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 50,
-    fontSize: 16,
-    color: COLORS.gray,
-    fontWeight: '600',
   },
 
 });

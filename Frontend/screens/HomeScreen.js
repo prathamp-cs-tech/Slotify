@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+// screens/HomeScreen.js
+
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from 'react';
 
 import {
   View,
@@ -13,25 +20,45 @@ import {
 } from 'react-native';
 
 import {
+  useFocusEffect,
+} from '@react-navigation/native';
+
+import {
   Ionicons,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
 
 import MainLayout from '../components/MainLayout';
+
 import SalonCard from '../components/SalonCard';
 
 import { CATEGORIES } from '../data/categories';
+
 import { COLORS } from '../constants/colors';
 
 import API from '../services/api';
 
 import useFavorites from '../hooks/useFavorites';
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({
+  navigation,
+}) {
 
-  const [salons, setSalons] = useState([]);
+  const [cards,
+    setCards] =
+      useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [filteredCards,
+    setFilteredCards] =
+      useState([]);
+
+  const [search,
+    setSearch] =
+      useState('');
+
+  const [loading,
+    setLoading] =
+      useState(true);
 
   const {
     favorites,
@@ -49,8 +76,11 @@ export default function HomeScreen({ navigation }) {
       Animated.timing(slideAnim, {
 
         toValue: 320,
+
         duration: 1200,
+
         easing: Easing.linear,
+
         useNativeDriver: true,
 
       })
@@ -59,15 +89,98 @@ export default function HomeScreen({ navigation }) {
 
   }, []);
 
+  useFocusEffect(
+
+    useCallback(() => {
+
+      fetchSalons();
+
+    }, [])
+
+  );
+
   useEffect(() => {
 
-    const fetchSalons = async () => {
+    if (!search.trim()) {
+
+      setFilteredCards(cards);
+
+      return;
+
+    }
+
+    const filtered =
+      cards.filter(
+
+        item =>
+
+          item.serviceData.name
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            ) ||
+
+          item.name
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            ) ||
+
+          item.serviceData.category
+            .toLowerCase()
+            .includes(
+              search.toLowerCase()
+            )
+
+      );
+
+    setFilteredCards(filtered);
+
+  }, [search, cards]);
+
+  const fetchSalons =
+    async () => {
 
       try {
 
-        const response = await API.get('/salons');
+        setLoading(true);
 
-        setSalons(response.data);
+        const response =
+          await API.get('/salons');
+
+        const flattened = [];
+
+        response.data.forEach((salon) => {
+
+          salon.services
+
+            .filter(
+
+              service =>
+                service.isActive
+
+            )
+
+            .forEach((service) => {
+
+              flattened.push({
+
+                ...salon,
+
+                serviceData:
+                  service,
+
+              });
+
+            });
+
+        });
+
+        setCards(flattened);
+
+        setFilteredCards(
+          flattened
+        );
 
       } catch (error) {
 
@@ -81,19 +194,19 @@ export default function HomeScreen({ navigation }) {
 
     };
 
-    fetchSalons();
-
-  }, []);
-
   return (
 
-    <MainLayout navigation={navigation}>
+    <MainLayout
+      navigation={navigation}
+    >
 
       <View style={styles.safe}>
 
         <StatusBar
           barStyle="dark-content"
-          backgroundColor={COLORS.background}
+          backgroundColor={
+            COLORS.background
+          }
         />
 
         <View style={styles.header}>
@@ -102,24 +215,24 @@ export default function HomeScreen({ navigation }) {
             SLOTIFY
           </Text>
 
-          <View style={styles.headerIcons}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() =>
 
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() =>
-                navigation.navigate('Favorites')
-              }
-            >
+              navigation.navigate(
+                'Favorites'
+              )
 
-              <Ionicons
-                name="heart-outline"
-                size={20}
-                color={COLORS.text}
-              />
+            }
+          >
 
-            </TouchableOpacity>
+            <Ionicons
+              name="heart-outline"
+              size={20}
+              color={COLORS.text}
+            />
 
-          </View>
+          </TouchableOpacity>
 
         </View>
 
@@ -128,13 +241,19 @@ export default function HomeScreen({ navigation }) {
           <Ionicons
             name="search-outline"
             size={18}
-            color={COLORS.lightGray}
+            color={
+              COLORS.lightGray
+            }
           />
 
           <TextInput
-            placeholder="Search Salon, Specialist"
-            placeholderTextColor={COLORS.lightGray}
+            placeholder="Search services"
+            placeholderTextColor={
+              COLORS.lightGray
+            }
             style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
           />
 
         </View>
@@ -145,15 +264,21 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.categories}>
 
-          {CATEGORIES.map(cat => (
+          {CATEGORIES.map((cat) => (
 
             <TouchableOpacity
               key={cat.id}
               style={styles.catItem}
               onPress={() =>
-                navigation.navigate('Category', {
-                  category: cat.label,
-                })
+
+                navigation.navigate(
+                  'Category',
+                  {
+                    category:
+                      cat.label,
+                  }
+                )
+
               }
             >
 
@@ -162,7 +287,9 @@ export default function HomeScreen({ navigation }) {
                 <MaterialCommunityIcons
                   name={cat.icon}
                   size={22}
-                  color={COLORS.primary}
+                  color={
+                    COLORS.primary
+                  }
                 />
 
               </View>
@@ -178,7 +305,7 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <Text style={styles.sectionTitle}>
-          Trending near you
+          Trending Services
         </Text>
 
         <ScrollView
@@ -187,20 +314,32 @@ export default function HomeScreen({ navigation }) {
 
           {loading ? (
 
-            <View style={styles.loaderContainer}>
+            <View
+              style={
+                styles.loaderContainer
+              }
+            >
 
-              <View style={styles.loaderTrack}>
+              <View
+                style={
+                  styles.loaderTrack
+                }
+              >
 
                 <Animated.View
                   style={[
+
                     styles.loaderBar,
+
                     {
                       transform: [
                         {
-                          translateX: slideAnim,
+                          translateX:
+                            slideAnim,
                         },
                       ],
                     },
+
                   ]}
                 />
 
@@ -212,23 +351,43 @@ export default function HomeScreen({ navigation }) {
 
             <View style={styles.grid}>
 
-              {salons.map((salon) => (
+              {filteredCards.map(
+                (item) => (
 
-                <SalonCard
-                  key={salon._id}
-                  salon={salon}
-                  navigation={navigation}
-                  favorites={favorites}
-                  toggleFav={toggleFav}
-                />
+                  <SalonCard
 
-              ))}
+                    key={
+                      `${item._id}-${item.serviceData._id}`
+                    }
+
+                    salon={item}
+
+                    navigation={
+                      navigation
+                    }
+
+                    favorites={
+                      favorites
+                    }
+
+                    toggleFav={
+                      toggleFav
+                    }
+
+                  />
+
+                )
+              )}
 
             </View>
 
           )}
 
-          <View style={{ height: 100 }} />
+          <View
+            style={{
+              height: 100,
+            }}
+          />
 
         </ScrollView>
 
@@ -244,13 +403,15 @@ const styles = StyleSheet.create({
 
   safe: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingTop: 8,
   },
 
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     paddingHorizontal: 20,
     marginTop: 10,
     marginBottom: 15,
@@ -263,23 +424,20 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
 
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-
   iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor:
+      COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   searchBar: {
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
+    backgroundColor:
+      COLORS.card,
     marginHorizontal: 20,
     borderRadius: 12,
     padding: 12,
@@ -303,7 +461,8 @@ const styles = StyleSheet.create({
 
   categories: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     paddingHorizontal: 20,
     marginBottom: 20,
   },
@@ -316,7 +475,8 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 14,
-    backgroundColor: COLORS.card,
+    backgroundColor:
+      COLORS.card,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -332,7 +492,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 15,
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
   },
 
   loaderContainer: {
@@ -343,7 +504,8 @@ const styles = StyleSheet.create({
   loaderTrack: {
     width: '85%',
     height: 5,
-    backgroundColor: '#E9D5FF',
+    backgroundColor:
+      '#E9D5FF',
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -351,7 +513,8 @@ const styles = StyleSheet.create({
   loaderBar: {
     width: 120,
     height: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
     borderRadius: 10,
   },
 

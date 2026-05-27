@@ -12,97 +12,116 @@ import {
   
   export default function ProviderCard({
     salon,
+    service,
     navigation,
   }) {
   
     return (
   
       <TouchableOpacity
+  
         style={styles.card}
-        activeOpacity={0.95}
+  
         onPress={() =>
+  
           navigation.navigate(
             'EditService',
             {
               salon,
+              service,
             }
           )
+  
         }
       >
   
         <Image
-          source={{ uri: salon.image }}
+          source={{
+            uri:
+              service.image ||
+              salon.image,
+          }}
           style={styles.image}
         />
   
-        <View style={styles.info}>
+        <View style={styles.content}>
   
           <View style={styles.topRow}>
   
-            <View style={{ flex: 1 }}>
+            <Text
+              style={styles.serviceName}
+              numberOfLines={1}
+            >
+              {service.name}
+            </Text>
   
-              <Text
-                style={styles.name}
-                numberOfLines={1}
-              >
-                {salon.name}
-              </Text>
+            <View style={styles.categoryBadge}>
   
-              <Text style={styles.service}>
-                {salon.service}
-              </Text>
-  
-            </View>
-  
-            <View style={styles.ratingBox}>
-  
-              <Ionicons
-                name="star"
-                size={12}
-                color={COLORS.warning}
-              />
-  
-              <Text style={styles.rating}>
-                {salon.rating}
+              <Text style={styles.categoryText}>
+                {service.category}
               </Text>
   
             </View>
   
           </View>
   
+          <Text
+            style={styles.salonName}
+            numberOfLines={1}
+          >
+            {salon.name}
+          </Text>
+  
           <View style={styles.bottomRow}>
   
-            <View>
+            <Text style={styles.price}>
+              ₹{service.price}
+            </Text>
   
-              <Text style={styles.price}>
-                ₹{salon.price}
+            <View style={styles.ratingRow}>
+  
+              <Ionicons
+                name="star"
+                size={14}
+                color="#F59E0B"
+              />
+  
+              <Text style={styles.rating}>
+  
+                {service.averageRating
+                  ? service.averageRating.toFixed(1)
+                  : '0.0'}
+  
               </Text>
   
             </View>
   
-            <View style={styles.rightRow}>
+          </View>
   
-              <View style={styles.statusBox}>
+          <View style={styles.statusRow}>
   
-                <View style={styles.dot} />
+            <View
+              style={[
   
-                <Text style={styles.status}>
-                  ACTIVE
-                </Text>
+                styles.statusDot,
   
-              </View>
+                {
+                  backgroundColor:
+                    service.isActive
+                      ? '#10B981'
+                      : '#EF4444',
+                },
   
-              <View style={styles.editBtn}>
+              ]}
+            />
   
-                <Ionicons
-                  name="create-outline"
-                  size={13}
-                  color={COLORS.primary}
-                />
+            <Text style={styles.statusText}>
   
-              </View>
+              {service.isActive
+                ? 'Active'
+                : 'Inactive'}
   
-            </View>
+            </Text>
   
           </View>
   
@@ -119,113 +138,95 @@ import {
     card: {
       backgroundColor: COLORS.white,
       borderRadius: 20,
-      marginBottom: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 12,
-      height: 115,
-      borderWidth: 1,
-      borderColor: '#ECE8FF',
+      overflow: 'hidden',
+      marginBottom: 18,
     },
   
     image: {
-      width: 82,
-      height: 82,
-      borderRadius: 16,
+      width: '100%',
+      height: 170,
     },
   
-    info: {
-      flex: 1,
-      marginLeft: 14,
-      justifyContent: 'center',
+    content: {
+      padding: 15,
     },
   
     topRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
+      justifyContent:
+        'space-between',
+      alignItems: 'center',
     },
   
-    name: {
+    serviceName: {
+      flex: 1,
       fontSize: 17,
       fontWeight: '800',
       color: COLORS.text,
-      paddingRight: 10,
+      marginRight: 10,
     },
   
-    service: {
-      marginTop: 4,
-      fontSize: 13,
-      color: COLORS.gray,
-      fontWeight: '500',
+    categoryBadge: {
+      backgroundColor: '#EDE9FE',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 20,
     },
   
-    ratingBox: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#FEF3C7',
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 10,
-    },
-  
-    rating: {
-      marginLeft: 4,
+    categoryText: {
+      color: COLORS.primary,
       fontSize: 11,
       fontWeight: '700',
-      color: '#92400E',
+    },
+  
+    salonName: {
+      marginTop: 7,
+      color: COLORS.gray,
+      fontSize: 13,
     },
   
     bottomRow: {
+      marginTop: 15,
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent:
+        'space-between',
       alignItems: 'center',
-      marginTop: 14,
     },
   
     price: {
-      fontSize: 21,
+      fontSize: 20,
       fontWeight: '900',
       color: COLORS.primary,
     },
   
-    rightRow: {
+    ratingRow: {
       flexDirection: 'row',
       alignItems: 'center',
     },
   
-    statusBox: {
+    rating: {
+      marginLeft: 5,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+  
+    statusRow: {
+      marginTop: 14,
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      backgroundColor: '#F0FDF4',
-      borderRadius: 20,
+    },
+  
+    statusDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 10,
       marginRight: 8,
     },
   
-    dot: {
-      width: 7,
-      height: 7,
-      borderRadius: 4,
-      backgroundColor: '#22C55E',
-      marginRight: 6,
-    },
-  
-    status: {
-      fontSize: 10,
-      fontWeight: '800',
-      color: '#15803D',
-      letterSpacing: 0.8,
-    },
-  
-    editBtn: {
-      width: 30,
-      height: 30,
-      borderRadius: 15,
-      backgroundColor: COLORS.card,
-      justifyContent: 'center',
-      alignItems: 'center',
+    statusText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: COLORS.gray,
     },
   
   });

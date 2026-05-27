@@ -1,29 +1,86 @@
-import React, { useState } from 'react';
-
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
-  Image,
- ScrollView,
+  Linking,
+  ScrollView,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
 
-import PrimaryButton from '../components/PrimaryButton';
-import SuccessModal from '../components/SuccessModal';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
-export default function EditProfileScreen({ navigation }) {
+export default function HelpCenterScreen({
+  navigation,
+}) {
 
-  const [saved, setSaved] = useState(false);
+  const supportOptions = [
+
+    {
+      icon: 'call',
+      iconColor: COLORS.primary,
+      title: 'Call Support',
+      subtitle: '+91 9876543210',
+      action: () =>
+        Linking.openURL(
+          'tel:+919876543210'
+        ),
+    },
+
+    {
+      icon: 'logo-whatsapp',
+      iconColor: '#22C55E',
+      title: 'WhatsApp Support',
+      subtitle:
+        'Chat instantly with support',
+      action: () =>
+        Linking.openURL(
+          'https://wa.me/919876543210'
+        ),
+    },
+
+    {
+      icon: 'mail',
+      iconColor: '#2563EB',
+      title: 'Email Support',
+      subtitle:
+        'support@slotify.com',
+      action: () =>
+        Linking.openURL(
+          'mailto:support@slotify.com'
+        ),
+    },
+
+  ];
+
+  const faqs = [
+
+    'How to cancel a booking?',
+
+    'How to reschedule an appointment?',
+
+    'How to contact a salon?',
+
+    'How to request a refund?',
+
+    'How to update my profile?',
+
+  ];
 
   return (
 
-    <View style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+    >
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -32,138 +89,165 @@ export default function EditProfileScreen({ navigation }) {
         }}
       >
 
+        {/* HEADER */}
         <View style={styles.headerRow}>
 
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            onPress={() =>
+              navigation.goBack()
+            }
           >
 
             <Ionicons
               name="arrow-back"
-              size={24}
+              size={22}
               color={COLORS.text}
             />
 
           </TouchableOpacity>
 
           <Text style={styles.header}>
-            Edit Profile
+            Help Center
           </Text>
 
-          <View style={{ width: 24 }} />
+          <View
+            style={{
+              width: 40,
+            }}
+          />
 
         </View>
 
-        <View style={styles.imageSection}>
+        {/* HERO */}
+        <View style={styles.heroCard}>
 
-          <View style={styles.avatarWrapper}>
+          <Ionicons
+            name="headset"
+            size={42}
+            color={COLORS.primary}
+          />
 
-            <Image
-              source={{
-                uri: 'https://randomuser.me/api/portraits/men/32.jpg',
-              }}
-              style={styles.avatar}
-            />
+          <Text style={styles.heroTitle}>
+            How can we help you?
+          </Text>
 
-            <TouchableOpacity style={styles.cameraBtn}>
+          <Text style={styles.heroText}>
+            Our support team is here
+            to assist you anytime.
+          </Text>
+
+        </View>
+
+        {/* SUPPORT OPTIONS */}
+        <Text style={styles.sectionTitle}>
+          Contact Support
+        </Text>
+
+        {supportOptions.map(
+          (item, index) => (
+
+            <TouchableOpacity
+              key={index}
+              style={styles.card}
+              activeOpacity={0.9}
+              onPress={item.action}
+            >
+
+              <View
+                style={[
+                  styles.iconBox,
+                  {
+                    backgroundColor:
+                      `${item.iconColor}15`,
+                  },
+                ]}
+              >
+
+                <Ionicons
+                  name={item.icon}
+                  size={22}
+                  color={item.iconColor}
+                />
+
+              </View>
+
+              <View style={styles.content}>
+
+                <Text style={styles.title}>
+                  {item.title}
+                </Text>
+
+                <Text
+                  style={styles.subtitle}
+                >
+                  {item.subtitle}
+                </Text>
+
+              </View>
 
               <Ionicons
-                name="camera"
-                size={15}
-                color={COLORS.white}
+                name="chevron-forward"
+                size={20}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
 
-          </View>
+          )
+        )}
 
-        </View>
+        {/* FAQ */}
+        <View style={styles.faqCard}>
 
-        <View style={styles.formCard}>
+          <View style={styles.faqHeader}>
 
-          <View style={styles.inputGroup}>
-
-            <Text style={styles.label}>
-              Full Name
-            </Text>
-
-            <TextInput
-              defaultValue="Puneeth"
-              placeholder="Enter name"
-              placeholderTextColor={COLORS.lightGray}
-              style={styles.input}
+            <Ionicons
+              name="help-circle"
+              size={22}
+              color={COLORS.primary}
             />
 
-          </View>
-
-          <View style={styles.inputGroup}>
-
-            <Text style={styles.label}>
-              Email
+            <Text style={styles.faqTitle}>
+              Frequently Asked Questions
             </Text>
 
-            <TextInput
-              defaultValue="puneeth@email.com"
-              placeholder="Enter email"
-              placeholderTextColor={COLORS.lightGray}
-              style={styles.input}
-            />
-
           </View>
 
-          <View style={styles.inputGroup}>
+          {faqs.map(
+            (faq, index) => (
 
-            <Text style={styles.label}>
-              Phone Number
-            </Text>
+              <TouchableOpacity
+                key={index}
+                style={styles.faqItem}
+              >
 
-            <TextInput
-              defaultValue="+91 9876543210"
-              placeholder="Enter phone"
-              placeholderTextColor={COLORS.lightGray}
-              style={styles.input}
-            />
+                <Text
+                  style={styles.faqText}
+                >
+                  {faq}
+                </Text>
 
-          </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={
+                    COLORS.lightGray
+                  }
+                />
 
-          <View style={styles.inputGroup}>
+              </TouchableOpacity>
 
-            <Text style={styles.label}>
-              Location
-            </Text>
-
-            <TextInput
-              defaultValue="Bangalore"
-              placeholder="Enter location"
-              placeholderTextColor={COLORS.lightGray}
-              style={styles.input}
-            />
-
-          </View>
-
-        </View>
-
-        <View style={styles.buttonWrapper}>
-
-          <PrimaryButton
-            title="Save Changes"
-            onPress={() => setSaved(true)}
-          />
+            )
+          )}
 
         </View>
 
       </ScrollView>
 
-      <SuccessModal
-        visible={saved}
-        title="Profile Updated"
-        onClose={() => {
-          setSaved(false);
-          navigation.goBack();
-        }}
-      />
-
-    </View>
+    </SafeAreaView>
 
   );
 
@@ -173,17 +257,28 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
     paddingHorizontal: 20,
-    paddingTop: 10,
   },
 
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 25,
+  },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor:
+      COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   header: {
@@ -192,63 +287,109 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  imageSection: {
+  heroCard: {
+    backgroundColor:
+      COLORS.white,
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
   },
 
-  avatarWrapper: {
-    position: 'relative',
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginTop: 14,
   },
 
-  avatar: {
-    width: 95,
-    height: 95,
-    borderRadius: 48,
+  heroText: {
+    fontSize: 13,
+    color: COLORS.gray,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
   },
 
-  cameraBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: COLORS.primary,
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 14,
+    marginLeft: 2,
+  },
+
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      COLORS.white,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+  },
+
+  iconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  formCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 22,
-    padding: 16,
+  content: {
+    flex: 1,
+    marginLeft: 14,
   },
 
-  inputGroup: {
-    marginBottom: 14,
-  },
-
-  label: {
-    fontSize: 12,
+  title: {
+    fontSize: 15,
     fontWeight: '700',
-    color: COLORS.gray,
-    marginBottom: 7,
-    marginLeft: 3,
+    color: COLORS.text,
   },
 
-  input: {
-    height: 50,
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    paddingHorizontal: 14,
+  subtitle: {
+    marginTop: 5,
+    fontSize: 12,
+    color: COLORS.gray,
+  },
+
+  faqCard: {
+    backgroundColor:
+      COLORS.white,
+    borderRadius: 24,
+    padding: 20,
+    marginTop: 10,
+  },
+
+  faqHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+
+  faqTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginLeft: 10,
+  },
+
+  faqItem: {
+    flexDirection: 'row',
+    justifyContent:
+      'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F2',
+  },
+
+  faqText: {
     fontSize: 13,
     color: COLORS.text,
     fontWeight: '500',
-  },
-
-  buttonWrapper: {
-    marginTop: 22,
   },
 
 });

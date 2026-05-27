@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import API from '../services/api';
 
 import {
@@ -9,31 +10,56 @@ import {
   TouchableOpacity,
   ScrollView,
   Linking,
+  Alert,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
 
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker
+  from '@react-native-community/datetimepicker';
 
-import PrimaryButton from '../components/PrimaryButton';
-import SuccessModal from '../components/SuccessModal';
+import PrimaryButton
+  from '../components/PrimaryButton';
+
+import SuccessModal
+  from '../components/SuccessModal';
+
+import {
+  COLORS,
+} from '../constants/colors';
 
 export default function SalonScreen({
   route,
   navigation,
 }) {
 
-  const { salon } = route.params;
+  const { salon } =
+    route.params;
 
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedTime,
+    setSelectedTime] =
+      useState(null);
 
-  const [date, setDate] = useState(new Date());
+  const [selectedDate,
+    setSelectedDate] =
+      useState(new Date());
 
-  const [showPicker, setShowPicker] = useState(false);
+  const [showPicker,
+    setShowPicker] =
+      useState(false);
 
-  const [booked, setBooked] = useState(false);
+  const [booked,
+    setBooked] =
+      useState(false);
+
+  const [loading,
+    setLoading] =
+      useState(false);
 
   const times = [
+
     '10:00 am',
     '10:30 am',
     '12:00 pm',
@@ -42,40 +68,118 @@ export default function SalonScreen({
     '4:30 pm',
     '5:00 pm',
     '5:30 pm',
+
   ];
-
-  const handleBooking = async () => {
-
-    if (!selectedTime) return;
-  
-    try {
-  
-      await API.post('/bookings', {
-        salonId: salon._id,
-        date: date.toDateString(),
-        time: selectedTime,
-        status: 'upcoming',
-      });
-  
-      setBooked(true);
-  
-    } catch (error) {
-  
-      console.log(error);
-  
-    }
-  
-  };
 
   const onChangeDate = (
     event,
-    selectedDate
-    ) => {
-    setShowPicker(false);
-    if (selectedDate) {
-        setDate(selectedDate);
+    selected
+  ) => {
+
+    if (selected) {
+
+      setSelectedDate(selected);
+
     }
-};
+
+  };
+
+  const handleBooking =
+    async () => {
+
+      try {
+
+        if (!selectedTime) {
+
+          Alert.alert(
+            'Select Time',
+            'Please select a booking time'
+          );
+
+          return;
+
+        }
+
+        setLoading(true);
+
+        const bookingDate =
+          new Date(selectedDate);
+
+        const time =
+          selectedTime.toLowerCase();
+
+        let hours =
+          parseInt(
+            time.split(':')[0]
+          );
+
+        const minutePart =
+          time.split(':')[1];
+
+        const minutes =
+          parseInt(
+            minutePart
+          );
+
+        if (
+          time.includes('pm') &&
+          hours !== 12
+        ) {
+
+          hours += 12;
+
+        }
+
+        if (
+          time.includes('am') &&
+          hours === 12
+        ) {
+
+          hours = 0;
+
+        }
+
+        bookingDate.setHours(hours);
+
+        bookingDate.setMinutes(minutes);
+
+        bookingDate.setSeconds(0);
+
+        const response =
+          await API.post(
+            '/bookings',
+            {
+              salonId: salon._id,
+              bookingDate,
+            }
+          );
+
+        console.log(
+          'BOOKED:',
+          response.data
+        );
+
+        setBooked(true);
+
+      } catch (error) {
+
+        console.log(
+          error.response?.data || error
+        );
+
+        Alert.alert(
+          'Booking Failed',
+          error.response?.data?.message ||
+          'Something went wrong'
+        );
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
 
   return (
 
@@ -89,13 +193,17 @@ export default function SalonScreen({
         <View>
 
           <Image
-            source={{ uri: salon.image }}
+            source={{
+              uri: salon.image,
+            }}
             style={styles.image}
           />
 
           <TouchableOpacity
             style={styles.backBtn}
-            onPress={() => navigation.goBack()}
+            onPress={() =>
+              navigation.goBack()
+            }
           >
 
             <Ionicons
@@ -110,7 +218,6 @@ export default function SalonScreen({
         {/* CONTENT */}
         <View style={styles.container}>
 
-          {/* TITLE */}
           <View style={styles.titleRow}>
 
             <Text style={styles.title}>
@@ -122,9 +229,16 @@ export default function SalonScreen({
               <Ionicons
                 name="star"
                 size={14}
+                color={
+                  COLORS.warning
+                }
               />
 
-              <Text style={styles.ratingText}>
+              <Text
+                style={
+                  styles.ratingText
+                }
+              >
                 {salon.rating}
               </Text>
 
@@ -138,7 +252,9 @@ export default function SalonScreen({
 
           {/* LOCATION */}
           <TouchableOpacity
-            style={styles.locationRow}
+            style={
+              styles.locationRow
+            }
             onPress={() =>
               Linking.openURL(
                 'https://maps.google.com/?q=BMS+College+of+Engineering+Bangalore'
@@ -151,7 +267,11 @@ export default function SalonScreen({
               size={18}
             />
 
-            <Text style={styles.locationText}>
+            <Text
+              style={
+                styles.locationText
+              }
+            >
               BMSCE Bangalore
             </Text>
 
@@ -164,11 +284,17 @@ export default function SalonScreen({
 
           <TouchableOpacity
             style={styles.dateBox}
-            onPress={() => setShowPicker(true)}
+            onPress={() =>
+              setShowPicker(true)
+            }
           >
 
-            <Text style={styles.dateText}>
-              {date.toDateString()}
+            <Text
+              style={
+                styles.dateText
+              }
+            >
+              {selectedDate.toDateString()}
             </Text>
 
           </TouchableOpacity>
@@ -179,11 +305,25 @@ export default function SalonScreen({
             <View style={styles.pickerWrapper}>
 
               <DateTimePicker
-                value={date}
+                value={selectedDate}
                 mode="date"
                 display="spinner"
+                minimumDate={new Date()}
                 onChange={onChangeDate}
               />
+
+              <TouchableOpacity
+                style={styles.doneBtn}
+                onPress={() =>
+                  setShowPicker(false)
+                }
+              >
+
+                <Text style={styles.doneText}>
+                  Done
+                </Text>
+
+              </TouchableOpacity>
 
             </View>
 
@@ -204,7 +344,7 @@ export default function SalonScreen({
                   styles.timeBtn,
 
                   selectedTime === t &&
-                    styles.activeTime,
+                  styles.activeTime,
                 ]}
                 onPress={() =>
                   setSelectedTime(t)
@@ -216,7 +356,7 @@ export default function SalonScreen({
                     styles.timeText,
 
                     selectedTime === t &&
-                      styles.activeTimeText,
+                    styles.activeTimeText,
                   ]}
                 >
                   {t}
@@ -225,55 +365,6 @@ export default function SalonScreen({
               </TouchableOpacity>
 
             ))}
-
-          </View>
-
-          {/* CONTACT */}
-          <View style={styles.contactRow}>
-
-            {/* CALL */}
-            <TouchableOpacity
-              style={styles.contactBtn}
-              onPress={() =>
-                Linking.openURL(
-                  'tel:+919036466958'
-                )
-              }
-            >
-
-              <Ionicons
-                name="call"
-                size={18}
-                color="#fff"
-              />
-
-              <Text style={styles.contactText}>
-                Call
-              </Text>
-
-            </TouchableOpacity>
-
-            {/* WHATSAPP */}
-            <TouchableOpacity
-              style={styles.whatsappBtn}
-              onPress={() =>
-                Linking.openURL(
-                  'https://wa.me/919036466958'
-                )
-              }
-            >
-
-              <Ionicons
-                name="logo-whatsapp"
-                size={18}
-                color="#fff"
-              />
-
-              <Text style={styles.contactText}>
-                WhatsApp
-              </Text>
-
-            </TouchableOpacity>
 
           </View>
 
@@ -288,19 +379,33 @@ export default function SalonScreen({
               Service Amount
             </Text>
 
-            <Text style={styles.billAmount}>
+            <Text
+              style={
+                styles.billAmount
+              }
+            >
               ₹{salon.price}
             </Text>
 
           </View>
 
-          {/* SUBMIT */}
+          {/* BOOK BUTTON */}
           <PrimaryButton
-            title="Submit"
-            onPress={handleBooking}
+            title={
+              loading
+                ? 'BOOKING...'
+                : 'Book Appointment'
+            }
+            onPress={
+              handleBooking
+            }
           />
 
-          <View style={{ height: 20 }} />
+          <View
+            style={{
+              height: 20,
+            }}
+          />
 
         </View>
 
@@ -311,20 +416,26 @@ export default function SalonScreen({
         visible={booked}
         title="Booking Confirmed"
         onClose={() => {
+
           setBooked(false);
+
+          navigation.navigate('Home');
+
         }}
       />
 
     </View>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   screen: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
+    backgroundColor:
+      COLORS.background,
   },
 
   image: {
@@ -336,7 +447,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     left: 20,
-    backgroundColor: '#fff',
+    backgroundColor:
+      COLORS.white,
     padding: 8,
     borderRadius: 20,
   },
@@ -347,12 +459,14 @@ const styles = StyleSheet.create({
 
   titleRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
   },
 
   title: {
     fontSize: 22,
     fontWeight: '800',
+    color: COLORS.text,
   },
 
   rating: {
@@ -365,7 +479,7 @@ const styles = StyleSheet.create({
   },
 
   desc: {
-    color: '#777',
+    color: COLORS.gray,
     marginBottom: 15,
     fontSize: 14,
     fontWeight: '500',
@@ -387,10 +501,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 10,
+    color: COLORS.text,
   },
 
   dateBox: {
-    backgroundColor: '#EDEBFF',
+    backgroundColor:
+      COLORS.card,
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -403,84 +519,67 @@ const styles = StyleSheet.create({
 
   pickerWrapper: {
     alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    paddingVertical: 10,
+    marginBottom: 20,
   },
 
-  tickBtn: {
-    backgroundColor: '#7C3AED',
-    padding: 10,
-    borderRadius: 20,
+  doneBtn: {
     marginTop: 10,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 28,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+
+  doneText: {
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: 14,
   },
 
   timeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
   },
 
   timeBtn: {
     width: '47%',
     padding: 12,
     borderRadius: 20,
-    backgroundColor: '#EDEBFF',
+    backgroundColor:
+      COLORS.card,
     marginBottom: 10,
     alignItems: 'center',
   },
 
   activeTime: {
-    backgroundColor: '#7C3AED',
+    backgroundColor:
+      COLORS.primary,
   },
 
   activeTimeText: {
-    color: '#fff',
+    color: COLORS.white,
   },
 
   timeText: {
     fontSize: 13,
   },
 
-  contactRow: {
+  billRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     marginBottom: 20,
     marginTop: 10,
   },
 
-  contactBtn: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#7C3AED',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginRight: 8,
-  },
-
-  whatsappBtn: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#22C55E',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-
-  contactText: {
-    color: '#fff',
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-
-  billRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-
   billAmount: {
-    fontWeight: '600',
+    fontWeight: '700',
+    color: COLORS.primary,
   },
 
 });

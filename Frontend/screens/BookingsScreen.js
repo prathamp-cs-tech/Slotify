@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import {
   View,
@@ -21,12 +21,38 @@ import SuccessModal from '../components/SuccessModal';
 
 import API from '../services/api';
 
+import { COLORS } from '../constants/colors';
+
 export default function BookingsScreen({ navigation }) {
 
   const [activeTab, setActiveTab] = useState('upcoming');
+
   const [showCancelPopup, setShowCancelPopup] = useState(false);
+
   const [bookings, setBookings] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
+  const slideAnim = useRef(
+    new Animated.Value(-120)
+  ).current;
+
+  useEffect(() => {
+
+    Animated.loop(
+
+      Animated.timing(slideAnim, {
+
+        toValue: 320,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+
+      })
+
+    ).start();
+
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -89,6 +115,31 @@ export default function BookingsScreen({ navigation }) {
     booking => booking.status === activeTab
   );
 
+  const formatDate = (date) => {
+
+    return new Date(date).toLocaleDateString(
+      'en-IN',
+      {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }
+    );
+
+  };
+
+  const formatTime = (date) => {
+
+    return new Date(date).toLocaleTimeString(
+      'en-IN',
+      {
+        hour: 'numeric',
+        minute: '2-digit',
+      }
+    );
+
+  };
+
   const renderItem = ({ item }) => {
 
     return (
@@ -116,20 +167,22 @@ export default function BookingsScreen({ navigation }) {
           <Ionicons
             name="calendar-outline"
             size={14}
+            color={COLORS.gray}
           />
 
           <Text style={styles.metaText}>
-            {item.date}
+            {formatDate(item.bookingDate)}
           </Text>
 
           <Ionicons
             name="time-outline"
             size={14}
+            color={COLORS.gray}
             style={{ marginLeft: 10 }}
           />
 
           <Text style={styles.metaText}>
-            {item.time}
+            {formatTime(item.bookingDate)}
           </Text>
 
         </View>
@@ -162,7 +215,7 @@ export default function BookingsScreen({ navigation }) {
                   <Ionicons
                     name="star-outline"
                     size={24}
-                    color="#F4B400"
+                    color={COLORS.warning}
                   />
 
                 </TouchableOpacity>
@@ -191,8 +244,8 @@ export default function BookingsScreen({ navigation }) {
             <PrimaryButton
               title="Cancel Booking"
               bordered
-              backgroundColor="red"
-              textColor="red"
+              backgroundColor={COLORS.danger}
+              textColor={COLORS.danger}
               onPress={() => cancelBooking(item._id)}
             />
 
@@ -250,7 +303,18 @@ export default function BookingsScreen({ navigation }) {
 
             <View style={styles.loaderTrack}>
 
-              <Animated.View style={styles.loaderBar} />
+              <Animated.View
+                style={[
+                  styles.loaderBar,
+                  {
+                    transform: [
+                      {
+                        translateX: slideAnim,
+                      },
+                    ],
+                  },
+                ]}
+              />
 
             </View>
 
@@ -266,15 +330,19 @@ export default function BookingsScreen({ navigation }) {
 
         )}
 
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 120,
-          }}
-        />
+        {!loading && (
+
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 120,
+            }}
+          />
+
+        )}
 
         <SuccessModal
           visible={showCancelPopup}
@@ -294,7 +362,7 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
+    backgroundColor: COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
@@ -303,7 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
     marginBottom: 20,
-    color: '#111',
+    color: COLORS.text,
   },
 
   tabs: {
@@ -316,27 +384,27 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#EDEBFF',
+    backgroundColor: COLORS.card,
   },
 
   activeTab: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: COLORS.primary,
   },
 
   tabText: {
     fontSize: 12,
-    color: '#555',
+    color: COLORS.gray,
     fontWeight: '500',
     textTransform: 'capitalize',
   },
 
   activeTabText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: '700',
   },
 
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     padding: 15,
     borderRadius: 18,
     marginBottom: 15,
@@ -351,11 +419,11 @@ const styles = StyleSheet.create({
   salon: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111',
+    color: COLORS.text,
   },
 
   service: {
-    color: '#666',
+    color: COLORS.gray,
     marginTop: 5,
     fontSize: 13,
   },
@@ -370,7 +438,7 @@ const styles = StyleSheet.create({
   metaText: {
     marginLeft: 5,
     fontSize: 12,
-    color: '#555',
+    color: COLORS.gray,
   },
 
   status: (status) => ({
@@ -380,8 +448,8 @@ const styles = StyleSheet.create({
       status === 'completed'
         ? 'green'
         : status === 'cancelled'
-        ? 'red'
-        : '#7C3AED',
+        ? COLORS.danger
+        : COLORS.primary,
   }),
 
   rateText: {
@@ -390,7 +458,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    color: COLORS.text,
   },
 
   starsRow: {
@@ -400,29 +468,30 @@ const styles = StyleSheet.create({
   },
 
   loadingWrapper: {
-    marginTop: 40,
+    marginTop: 50,
     alignItems: 'center',
   },
 
   loaderTrack: {
     width: '85%',
     height: 5,
-    backgroundColor: '#E9D5FF',
+    backgroundColor: '#DDD6FE',
     borderRadius: 10,
     overflow: 'hidden',
   },
 
   loaderBar: {
-    width: '100%',
+    width: 120,
     height: 5,
-    backgroundColor: '#7C3AED',
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
   },
 
   emptyText: {
     textAlign: 'center',
     marginTop: 40,
     fontSize: 16,
-    color: '#777',
+    color: COLORS.gray,
     fontWeight: '600',
   },
 

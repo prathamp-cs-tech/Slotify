@@ -6,6 +6,8 @@ const Salon = require('./models/Salon');
 const salonRoutes = require('./routes/salonRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes =require('./routes/userRoutes');
 
 const app = express();
 
@@ -14,6 +16,8 @@ app.use(express.json());
 app.use('/api/salons', salonRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 console.log('Salon routes loaded');
 
 mongoose.connect(process.env.MONGO_URL)

@@ -13,13 +13,54 @@ import { Ionicons } from '@expo/vector-icons';
 import MainLayout from '../components/MainLayout';
 import PrimaryButton from '../components/PrimaryButton';
 
-import { useState } from 'react';
+import {
+  useState,
+  useEffect,
+} from 'react';
 
 import { COLORS } from '../constants/colors';
 
-export default function ProfileScreen({ navigation }) {
+import {
+  getUserData,
+  logoutUser,
+} from '../services/auth';
 
-  const [notifications, setNotifications] = useState(true);
+export default function ProfileScreen({
+  navigation,
+}) {
+
+  const [notifications,
+    setNotifications] =
+      useState(true);
+
+  const [user,
+    setUser] =
+      useState(null);
+
+  useEffect(() => {
+
+    const loadUser = async () => {
+
+      const userData =
+        await getUserData();
+
+      setUser(userData);
+
+    };
+
+    loadUser();
+
+  }, []);
+
+  const handleLogout = async () => {
+
+    await logoutUser();
+
+    navigation.replace(
+      'Landing'
+    );
+
+  };
 
   return (
 
@@ -29,21 +70,27 @@ export default function ProfileScreen({ navigation }) {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 30 }}
+          contentContainerStyle={{
+            paddingBottom: 30,
+          }}
         >
 
+          {/* TOP SECTION */}
           <View style={styles.topSection}>
 
             <View style={styles.avatarWrapper}>
 
               <Image
                 source={{
-                  uri: 'https://randomuser.me/api/portraits/men/32.jpg',
+                  uri:
+                    'https://randomuser.me/api/portraits/men/32.jpg',
                 }}
                 style={styles.avatar}
               />
 
-              <TouchableOpacity style={styles.editAvatarBtn}>
+              <TouchableOpacity
+                style={styles.editAvatarBtn}
+              >
 
                 <Ionicons
                   name="camera"
@@ -56,15 +103,23 @@ export default function ProfileScreen({ navigation }) {
             </View>
 
             <Text style={styles.name}>
-              Puneeth
+
+              {user?.name
+                ? user.name.toUpperCase()
+                : 'USER'}
+
             </Text>
 
             <Text style={styles.email}>
-              puneeth@email.com
+
+              {user?.email ||
+                'No email'}
+
             </Text>
 
           </View>
 
+          {/* ACCOUNT */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -73,7 +128,11 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('Bookings')}
+              onPress={() =>
+                navigation.navigate(
+                  'Bookings'
+                )
+              }
             >
 
               <View style={styles.rowLeft}>
@@ -93,7 +152,9 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color={COLORS.lightGray}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
@@ -102,7 +163,11 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('Favorites')}
+              onPress={() =>
+                navigation.navigate(
+                  'Favorites'
+                )
+              }
             >
 
               <View style={styles.rowLeft}>
@@ -122,7 +187,9 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color={COLORS.lightGray}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
@@ -131,7 +198,11 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('EditProfile')}
+              onPress={() =>
+                navigation.navigate(
+                  'EditProfile'
+                )
+              }
             >
 
               <View style={styles.rowLeft}>
@@ -151,13 +222,16 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color={COLORS.lightGray}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
 
           </View>
 
+          {/* PREFERENCES */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -182,7 +256,9 @@ export default function ProfileScreen({ navigation }) {
 
               <Switch
                 value={notifications}
-                onValueChange={setNotifications}
+                onValueChange={
+                  setNotifications
+                }
                 trackColor={{
                   false: '#ccc',
                   true: '#C4B5FD',
@@ -198,6 +274,7 @@ export default function ProfileScreen({ navigation }) {
 
           </View>
 
+          {/* SUPPORT */}
           <View style={styles.card}>
 
             <Text style={styles.cardTitle}>
@@ -206,7 +283,11 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('HelpCenter')}
+              onPress={() =>
+                navigation.navigate(
+                  'HelpCenter'
+                )
+              }
             >
 
               <View style={styles.rowLeft}>
@@ -226,7 +307,9 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color={COLORS.lightGray}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
@@ -235,7 +318,11 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.row}
-              onPress={() => navigation.navigate('Terms')}
+              onPress={() =>
+                navigation.navigate(
+                  'Terms'
+                )
+              }
             >
 
               <View style={styles.rowLeft}>
@@ -255,21 +342,28 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color={COLORS.lightGray}
+                color={
+                  COLORS.lightGray
+                }
               />
 
             </TouchableOpacity>
 
           </View>
 
+          {/* LOGOUT */}
           <View style={styles.logoutWrapper}>
 
             <PrimaryButton
               title="Logout"
               bordered
-              backgroundColor={COLORS.danger}
-              textColor={COLORS.danger}
-              onPress={() => navigation.navigate('Logout')}
+              backgroundColor={
+                COLORS.danger
+              }
+              textColor={
+                COLORS.danger
+              }
+              onPress={handleLogout}
             />
 
           </View>
@@ -288,7 +382,8 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
   },
 
   topSection: {
@@ -311,7 +406,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: COLORS.primary,
+    backgroundColor:
+      COLORS.primary,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -333,7 +429,8 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor:
+      COLORS.white,
     marginHorizontal: 20,
     borderRadius: 18,
     paddingVertical: 10,
@@ -351,7 +448,8 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     paddingHorizontal: 18,
     paddingVertical: 14,

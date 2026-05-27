@@ -1,109 +1,296 @@
 import { useState } from 'react';
-import { SafeAreaView } from 'react-native';
+
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 
-export default function LoginScreen({ navigation, route }) {
+import API from '../services/api';
+
+import {
+  saveUserData,
+} from '../services/auth';
+
+import { COLORS } from '../constants/colors';
+
+export default function LoginScreen({
+  navigation,
+  route,
+}) {
+
   const { role } = route.params || {};
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [email, setEmail] =
+    useState('');
+
+  const [password, setPassword] =
+    useState('');
+
+  const [
+    passwordVisible,
+    setPasswordVisible,
+  ] = useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const handleLogin = async () => {
+
+    if (!email || !password) {
+
+      Alert.alert(
+        'Error',
+        'Please fill all fields'
+      );
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      const response =
+        await API.post(
+          '/auth/login',
+          {
+            email,
+            password,
+          }
+        );
+
+      const token =
+        response.data.token;
+
+      const user =
+        response.data.user;
+
+      await saveUserData(
+        token,
+        user
+      );
+
+      if (
+        user.role === 'provider'
+      ) {
+
+        navigation.replace(
+          'ProviderHome'
+        );
+
+      } else {
+
+        navigation.replace(
+          'Home'
+        );
+
+      }
+
+    } catch (error) {
+
+      Alert.alert(
+        'Login Failed',
+        error.response?.data?.message ||
+        'Something went wrong'
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
   return (
-    <SafeAreaView
+
+    <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={
+        Platform.OS === 'ios'
+          ? 'padding'
+          : 'height'
+      }
     >
 
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.brandTitle}>SLOTIFY</Text>
+
+        <Text style={styles.brandTitle}>
+          SLOTIFY
+        </Text>
+
       </View>
 
-      {/* Card */}
       <View style={styles.card}>
 
         <View style={styles.welcomeRow}>
-          <Text style={styles.welcomeText}>Welcome back</Text>
-          <Ionicons name="person" size={26} color="#6C63FF" style={{ marginLeft: 6 }} />
+
+          <Text style={styles.welcomeText}>
+            Welcome back
+          </Text>
+
+          <Ionicons
+            name="person"
+            size={24}
+            color={COLORS.primary}
+            style={{
+              marginLeft: 6,
+            }}
+          />
+
         </View>
 
         <Text style={styles.subText}>
-          Enter valid user name & password to continue
+          Enter valid email &
+          password to continue
         </Text>
 
-        {/* Email */}
         <View style={styles.inputWrapper}>
-          <Ionicons name="person-outline" size={18} color="#888" />
+
+          <Ionicons
+            name="mail-outline"
+            size={18}
+            color={COLORS.lightGray}
+          />
+
           <TextInput
             style={styles.input}
-            placeholder="Username/email"
-            placeholderTextColor="#999"
+            placeholder="Email"
+            placeholderTextColor={
+              COLORS.lightGray
+            }
+            autoCapitalize="none"
+            keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
           />
+
         </View>
 
-        {/* Password */}
         <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={18} color="#888" />
+
+          <Ionicons
+            name="lock-closed-outline"
+            size={18}
+            color={COLORS.lightGray}
+          />
+
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor="#999"
-            secureTextEntry={!passwordVisible}
+            placeholderTextColor={
+              COLORS.lightGray
+            }
+            secureTextEntry={
+              !passwordVisible
+            }
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+
+          <TouchableOpacity
+            onPress={() =>
+              setPasswordVisible(
+                !passwordVisible
+              )
+            }
+          >
+
             <Ionicons
-              name={passwordVisible ? 'eye-outline' : 'eye-off-outline'}
+              name={
+                passwordVisible
+                  ? 'eye-outline'
+                  : 'eye-off-outline'
+              }
               size={18}
-              color="#888"
+              color={
+                COLORS.lightGray
+              }
             />
+
           </TouchableOpacity>
+
         </View>
 
-        {/* Forgot */}
-        <TouchableOpacity style={styles.forgotWrapper} onPress={() => navigation.navigate('Forgot', { role })}>
-          <Text style={styles.forgotText}>Forgot password?</Text>
+        <TouchableOpacity
+          style={styles.forgotWrapper}
+          onPress={() =>
+            navigation.navigate(
+              'Forgot',
+              { role }
+            )
+          }
+        >
+
+          <Text style={styles.forgotText}>
+            Forgot password?
+          </Text>
+
         </TouchableOpacity>
 
-        {/* Login Button */}
         <TouchableOpacity
-        style={styles.loginButton}
-        onPress={() => {
+          style={styles.loginButton}
+          onPress={handleLogin}
+          disabled={loading}
+        >
 
-          if (role === 'serviceprovider') {
-            navigation.navigate('ProviderHome');
-          } else {
-            navigation.navigate('Home');
-          }
+          <Text style={styles.loginButtonText}>
 
-        }}
-      >
-        <Text style={styles.loginButtonText}>
-          LOGIN
-        </Text>
-      </TouchableOpacity>
+            {loading
+              ? 'LOGGING IN...'
+              : 'LOGIN'}
 
-        {/* Signup */}
+          </Text>
+
+        </TouchableOpacity>
+
         <View style={styles.signupRow}>
-          <Text style={styles.signupText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Signup', { role })}>
-            <Text style={styles.signupLink}>Sign up</Text>
+
+          <Text style={styles.signupText}>
+            Don't have an account?
+          </Text>
+
+          <TouchableOpacity
+            onPress={() =>
+              navigation.replace(
+                'Signup',
+                {
+                  role:
+                    role === 'provider'
+                      ? 'provider'
+                      : 'customer',
+                }
+              )
+            }
+          >
+
+            <Text style={styles.signupLink}>
+              {' '}Sign up
+            </Text>
+
           </TouchableOpacity>
+
         </View>
 
       </View>
-    </SafeAreaView>
+
+    </KeyboardAvoidingView>
+
   );
+
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#9F8FEF',
@@ -116,15 +303,16 @@ const styles = StyleSheet.create({
   },
 
   brandTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: '900',
     letterSpacing: 5,
     color: '#4C1D95',
   },
 
   card: {
     flex: 0.65,
-    backgroundColor: '#F3F0FF',
+    backgroundColor:
+      COLORS.background,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
     padding: 30,
@@ -140,19 +328,20 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#6C63FF',
+    color: COLORS.primary,
   },
 
   subText: {
     fontSize: 13,
-    color: '#777',
+    color: COLORS.gray,
     marginBottom: 25,
   },
 
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEBFF',
+    backgroundColor:
+      COLORS.card,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -163,7 +352,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 14,
-    color: '#333',
+    color: COLORS.text,
   },
 
   forgotWrapper: {
@@ -173,11 +362,12 @@ const styles = StyleSheet.create({
 
   forgotText: {
     fontSize: 13,
-    color: '#555',
+    color: COLORS.gray,
   },
 
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor:
+      COLORS.primary,
     borderRadius: 40,
     paddingVertical: 18,
     alignItems: 'center',
@@ -185,7 +375,7 @@ const styles = StyleSheet.create({
   },
 
   loginButtonText: {
-    color: 'white',
+    color: COLORS.white,
     fontWeight: '700',
     fontSize: 15,
     letterSpacing: 2,
@@ -198,12 +388,13 @@ const styles = StyleSheet.create({
 
   signupText: {
     fontSize: 13,
-    color: '#555',
+    color: COLORS.gray,
   },
 
   signupLink: {
     fontSize: 13,
-    color: '#7C3AED',
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '700',
   },
+
 });

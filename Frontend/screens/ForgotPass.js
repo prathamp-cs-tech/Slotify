@@ -8,9 +8,12 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+
+import { COLORS } from '../constants/colors';
 
 export default function ForgotPassScreen({
   navigation,
@@ -22,21 +25,71 @@ export default function ForgotPassScreen({
   const [otpVisible, setOtpVisible] = useState(false);
 
   const [email, setEmail] = useState('');
+
   const [otp, setOtp] = useState('');
+
+  const [otpSent, setOtpSent] = useState(false);
+
+  const sendOTP = () => {
+
+    if (!email.trim()) {
+
+      Alert.alert(
+        'Missing Email',
+        'Please enter your email address'
+      );
+
+      return;
+
+    }
+
+    setOtpSent(true);
+
+    Alert.alert(
+      'OTP Sent',
+      'A verification code has been sent to your email'
+    );
+
+  };
+
+  const verifyOTP = () => {
+
+    if (!otp.trim()) {
+
+      Alert.alert(
+        'Missing OTP',
+        'Please enter the OTP'
+      );
+
+      return;
+
+    }
+
+    navigation.navigate('Reset', {
+      role,
+    });
+
+  };
 
   return (
 
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={
+        Platform.OS === 'ios'
+          ? 'padding'
+          : 'height'
+      }
     >
 
-      {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.brandTitle}>SLOTIFY</Text>
+
+        <Text style={styles.brandTitle}>
+          SLOTIFY
+        </Text>
+
       </View>
 
-      {/* CARD */}
       <View style={styles.card}>
 
         <View style={styles.welcomeRow}>
@@ -48,7 +101,7 @@ export default function ForgotPassScreen({
           <Ionicons
             name="lock-closed-outline"
             size={24}
-            color="#6C63FF"
+            color={COLORS.primary}
             style={{ marginLeft: 8 }}
           />
 
@@ -58,78 +111,88 @@ export default function ForgotPassScreen({
           Enter your email address to receive password reset instructions
         </Text>
 
-        {/* EMAIL */}
         <View style={styles.inputWrapper}>
 
           <Ionicons
-            name="person-outline"
+            name="mail-outline"
             size={18}
-            color="#888"
+            color={COLORS.lightGray}
           />
 
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor="#999"
+            placeholderTextColor={COLORS.lightGray}
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
 
         </View>
 
-        {/* SEND OTP */}
-        <TouchableOpacity style={styles.forgotWrapper}>
+        <TouchableOpacity
+          style={styles.sendOtpBtn}
+          onPress={sendOTP}
+        >
 
-          <Text style={styles.forgotText}>
-            Send OTP
+          <Text style={styles.sendOtpText}>
+            {otpSent ? 'RESEND OTP' : 'SEND OTP'}
           </Text>
 
         </TouchableOpacity>
 
-        {/* OTP */}
-        <View style={styles.inputWrapper}>
+        {otpSent && (
 
-          <Ionicons
-            name="key-outline"
-            size={18}
-            color="#888"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Enter OTP"
-            placeholderTextColor="#999"
-            secureTextEntry={!otpVisible}
-            value={otp}
-            onChangeText={setOtp}
-          />
-
-          <TouchableOpacity
-            onPress={() => setOtpVisible(!otpVisible)}
-          >
+          <View style={styles.inputWrapper}>
 
             <Ionicons
-              name={
-                otpVisible
-                  ? 'eye-outline'
-                  : 'eye-off-outline'
-              }
+              name="key-outline"
               size={18}
-              color="#888"
+              color={COLORS.lightGray}
             />
 
-          </TouchableOpacity>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter OTP"
+              placeholderTextColor={COLORS.lightGray}
+              secureTextEntry={!otpVisible}
+              value={otp}
+              onChangeText={setOtp}
+              keyboardType="number-pad"
+            />
 
-        </View>
+            <TouchableOpacity
+              onPress={() =>
+                setOtpVisible(!otpVisible)
+              }
+            >
 
-        {/* VERIFY BUTTON */}
+              <Ionicons
+                name={
+                  otpVisible
+                    ? 'eye-outline'
+                    : 'eye-off-outline'
+                }
+                size={18}
+                color={COLORS.lightGray}
+              />
+
+            </TouchableOpacity>
+
+          </View>
+
+        )}
+
         <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() =>
-            navigation.navigate('Reset', {
-              role,
-            })
-          }
+          style={[
+            styles.loginButton,
+            !otpSent && {
+              opacity: 0.5,
+            },
+          ]}
+          disabled={!otpSent}
+          onPress={verifyOTP}
         >
 
           <Text style={styles.loginButtonText}>
@@ -138,7 +201,6 @@ export default function ForgotPassScreen({
 
         </TouchableOpacity>
 
-        {/* SIGNUP */}
         <View style={styles.signupRow}>
 
           <Text style={styles.signupText}>
@@ -164,7 +226,9 @@ export default function ForgotPassScreen({
       </View>
 
     </KeyboardAvoidingView>
+
   );
+
 }
 
 const styles = StyleSheet.create({
@@ -181,15 +245,15 @@ const styles = StyleSheet.create({
   },
 
   brandTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: '900',
     letterSpacing: 5,
     color: '#4C1D95',
   },
 
   card: {
     flex: 0.65,
-    backgroundColor: '#F3F0FF',
+    backgroundColor: COLORS.background,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
     padding: 30,
@@ -205,12 +269,12 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#6C63FF',
+    color: COLORS.primary,
   },
 
   subText: {
     fontSize: 13,
-    color: '#777',
+    color: COLORS.gray,
     marginBottom: 25,
     lineHeight: 20,
   },
@@ -218,7 +282,7 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEBFF',
+    backgroundColor: COLORS.card,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -229,23 +293,22 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 14,
-    color: '#333',
+    color: COLORS.text,
   },
 
-  forgotWrapper: {
-    alignItems: 'flex-end',
-    marginBottom: 20,
+  sendOtpBtn: {
     alignItems: 'center',
+    marginBottom: 22,
   },
 
-  forgotText: {
+  sendOtpText: {
     fontSize: 13,
-    color: '#7C3AED',
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '700',
   },
 
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: COLORS.primary,
     borderRadius: 40,
     paddingVertical: 18,
     alignItems: 'center',
@@ -254,7 +317,7 @@ const styles = StyleSheet.create({
   },
 
   loginButtonText: {
-    color: 'white',
+    color: COLORS.white,
     fontWeight: '700',
     fontSize: 15,
     letterSpacing: 2,
@@ -267,13 +330,13 @@ const styles = StyleSheet.create({
 
   signupText: {
     fontSize: 13,
-    color: '#555',
+    color: COLORS.gray,
   },
 
   signupLink: {
     fontSize: 13,
-    color: '#7C3AED',
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontWeight: '700',
   },
 
 });

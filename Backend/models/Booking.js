@@ -1,30 +1,43 @@
 const mongoose = require('mongoose');
 
-const bookingSchema = new mongoose.Schema({
+const bookingSchema =
+  new mongoose.Schema({
 
-  salonId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Salon',
-    required: true,
-  },
+    userId: {
+      type:
+        mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
 
-  date: {
-    type: String,
-    required: true,
-  },
+    salonId: {
+      type:
+        mongoose.Schema.Types.ObjectId,
+      ref: 'Salon',
+      required: true,
+    },
 
-  time: {
-    type: String,
-    required: true,
-  },
+    bookingDate: {
+      type: Date,
+      required: true,
+    },
 
-  status: {
-    type: String,
-    default: 'upcoming',
-  },
+    status: {
+      type: String,
+      enum: [
+        'upcoming',
+        'completed',
+        'cancelled',
+      ],
+      default: 'upcoming',
+    },
 
-}, {
-  timestamps: true,
-});
+  }, {
+    timestamps: true,
+  });
 
-module.exports = mongoose.model('Booking', bookingSchema);
+module.exports =
+  mongoose.model(
+    'Booking',
+    bookingSchema
+  );

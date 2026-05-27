@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  useState,
+  useEffect,
+} from 'react';
 
 import {
   View,
@@ -9,35 +11,167 @@ import {
   TextInput,
   Image,
   ScrollView,
-  Modal,
+  Alert,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
+
+import {
+  Ionicons,
+} from '@expo/vector-icons';
+
 import PrimaryButton from '../components/PrimaryButton';
+
 import SuccessModal from '../components/SuccessModal';
-export default function EditProfileScreen({ navigation }) {
 
-  const [saved, setSaved] = useState(false);
+import {
+  COLORS,
+} from '../constants/colors';
 
-  const handleSave = () => {
+import {
+  getUserData,
+  saveUserData,
+  getToken,
+} from '../services/auth';
 
-    setSaved(true);
+import API from '../services/api';
 
-    setTimeout(() => {
-      setSaved(false);
-      navigation.goBack();
-    }, 1800);
+export default function EditProfileScreen({
+  navigation,
+}) {
+
+  const [saved,
+    setSaved] =
+      useState(false);
+
+  const [loading,
+    setLoading] =
+      useState(false);
+
+  const [name,
+    setName] =
+      useState('');
+
+  const [email,
+    setEmail] =
+      useState('');
+
+  const [phone,
+    setPhone] =
+      useState('');
+
+  const [location,
+    setLocation] =
+      useState('');
+
+  useEffect(() => {
+
+    const loadUser = async () => {
+
+      const user =
+        await getUserData();
+
+      if (user) {
+
+        setName(
+          user.name || ''
+        );
+
+        setEmail(
+          user.email || ''
+        );
+
+        setPhone(
+          user.phone || ''
+        );
+
+        setLocation(
+          user.location || ''
+        );
+
+      }
+
+    };
+
+    loadUser();
+
+  }, []);
+
+  const handleSave = async () => {
+
+    if (!name || !email) {
+
+      Alert.alert(
+        'Error',
+        'Name and Email are required'
+      );
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      const token =
+        await getToken();
+
+      const response =
+        await API.put(
+          '/users/profile',
+          {
+            name,
+            email,
+            phone,
+            location,
+          },
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      await saveUserData(
+        token,
+        response.data
+      );
+
+      setSaved(true);
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        'Update Failed',
+        error.response?.data
+          ?.message ||
+          'Something went wrong'
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
 
   };
 
   return (
 
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+    >
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 40
+          paddingBottom: 40,
         }}
       >
 
@@ -45,20 +179,29 @@ export default function EditProfileScreen({ navigation }) {
         <View style={styles.headerRow}>
 
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            onPress={() =>
+              navigation.goBack()
+            }
           >
+
             <Ionicons
               name="arrow-back"
-              size={24}
-              color="#111"
+              size={22}
+              color={COLORS.text}
             />
+
           </TouchableOpacity>
 
           <Text style={styles.header}>
             Edit Profile
           </Text>
 
-          <View style={{ width: 24 }} />
+          <View
+            style={{
+              width: 40,
+            }}
+          />
 
         </View>
 
@@ -69,26 +212,33 @@ export default function EditProfileScreen({ navigation }) {
 
             <Image
               source={{
-                uri: 'https://randomuser.me/api/portraits/men/32.jpg'
+                uri:
+                  'https://randomuser.me/api/portraits/men/32.jpg',
               }}
               style={styles.avatar}
             />
 
-            <TouchableOpacity style={styles.cameraBtn}>
+            <TouchableOpacity
+              style={styles.cameraBtn}
+            >
 
               <Ionicons
                 name="camera"
-                size={15}
-                color="#fff"
+                size={16}
+                color={COLORS.white}
               />
 
             </TouchableOpacity>
 
           </View>
 
+          <Text style={styles.changePhoto}>
+            Change Photo
+          </Text>
+
         </View>
 
-        {/* FORM CARD */}
+        {/* FORM */}
         <View style={styles.formCard}>
 
           {/* NAME */}
@@ -98,12 +248,23 @@ export default function EditProfileScreen({ navigation }) {
               Full Name
             </Text>
 
-            <TextInput
-              defaultValue="Puneeth"
-              placeholder="Enter name"
-              placeholderTextColor="#999"
-              style={styles.input}
-            />
+            <View style={styles.inputWrapper}>
+
+              <Ionicons
+                name="person-outline"
+                size={18}
+                color={COLORS.gray}
+              />
+
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter name"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+
+            </View>
 
           </View>
 
@@ -111,15 +272,28 @@ export default function EditProfileScreen({ navigation }) {
           <View style={styles.inputGroup}>
 
             <Text style={styles.label}>
-              Email
+              Email Address
             </Text>
 
-            <TextInput
-              defaultValue="puneeth@email.com"
-              placeholder="Enter email"
-              placeholderTextColor="#999"
-              style={styles.input}
-            />
+            <View style={styles.inputWrapper}>
+
+              <Ionicons
+                name="mail-outline"
+                size={18}
+                color={COLORS.gray}
+              />
+
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter email"
+                placeholderTextColor="#999"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                style={styles.input}
+              />
+
+            </View>
 
           </View>
 
@@ -130,12 +304,24 @@ export default function EditProfileScreen({ navigation }) {
               Phone Number
             </Text>
 
-            <TextInput
-              defaultValue="+91 9876543210"
-              placeholder="Enter phone"
-              placeholderTextColor="#999"
-              style={styles.input}
-            />
+            <View style={styles.inputWrapper}>
+
+              <Ionicons
+                name="call-outline"
+                size={18}
+                color={COLORS.gray}
+              />
+
+              <TextInput
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="Enter phone"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+                style={styles.input}
+              />
+
+            </View>
 
           </View>
 
@@ -146,22 +332,41 @@ export default function EditProfileScreen({ navigation }) {
               Location
             </Text>
 
-            <TextInput
-              defaultValue="Bangalore"
-              placeholder="Enter location"
-              placeholderTextColor="#999"
-              style={styles.input}
-            />
+            <View style={styles.inputWrapper}>
+
+              <Ionicons
+                name="location-outline"
+                size={18}
+                color={COLORS.gray}
+              />
+
+              <TextInput
+                value={location}
+                onChangeText={setLocation}
+                placeholder="Enter location"
+                placeholderTextColor="#999"
+                style={styles.input}
+              />
+
+            </View>
 
           </View>
 
         </View>
 
         {/* BUTTON */}
-        <PrimaryButton
-          title="Save Changes"
-          onPress={() => setSaved(true)}
-        />
+        <View style={styles.buttonWrapper}>
+
+          <PrimaryButton
+            title={
+              loading
+                ? 'Saving...'
+                : 'Save Changes'
+            }
+            onPress={handleSave}
+          />
+
+        </View>
 
       </ScrollView>
 
@@ -170,44 +375,57 @@ export default function EditProfileScreen({ navigation }) {
         visible={saved}
         title="Profile Updated"
         onClose={() => {
+
           setSaved(false);
+
           navigation.goBack();
+
         }}
       />
 
     </SafeAreaView>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: 15,
-    margin:20,
-    marginBottom:0,
+    backgroundColor:
+      COLORS.background,
+    paddingHorizontal: 20,
   },
 
-  /* HEADER */
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     marginTop: 10,
-    marginBottom: 25,
+    marginBottom: 30,
+  },
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor:
+      COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   header: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#111',
+    color: COLORS.text,
   },
 
-  /* IMAGE */
   imageSection: {
     alignItems: 'center',
-    marginBottom: 22,
+    marginBottom: 28,
   },
 
   avatarWrapper: {
@@ -215,89 +433,74 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 95,
-    height: 95,
-    borderRadius: 48,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
   },
 
   cameraBtn: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#7C3AED',
+    bottom: 4,
+    right: 4,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor:
+      COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor:
+      COLORS.background,
   },
 
-  /* FORM */
+  changePhoto: {
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+
   formCard: {
-    backgroundColor: '#EDEBFF',
-    borderRadius: 20,
-    padding: 16,
+    backgroundColor:
+      COLORS.white,
+    borderRadius: 24,
+    padding: 18,
   },
 
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: 18,
   },
 
   label: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#555',
-    marginBottom: 7,
+    color: COLORS.gray,
+    marginBottom: 8,
     marginLeft: 3,
   },
 
-  input: {
-    height: 48,
-    backgroundColor: '#fff',
-    borderRadius: 14,
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor:
+      COLORS.card,
+    borderRadius: 16,
     paddingHorizontal: 14,
-    fontSize: 13,
-    color: '#111',
+    height: 54,
+  },
+
+  input: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    color: COLORS.text,
     fontWeight: '500',
   },
 
-  /* BUTTON */
-  saveBtn: {
-    height: 54,
-    backgroundColor: '#7C3AED',
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-
-  saveText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-
-  /* MODAL */
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  modalBox: {
-    width: '72%',
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    paddingVertical: 30,
-    alignItems: 'center',
-  },
-
-  modalText: {
-    marginTop: 14,
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111',
+  buttonWrapper: {
+    marginTop: 24,
+    marginBottom: 20,
   },
 
 });

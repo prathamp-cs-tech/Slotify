@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 
 const favoriteSchema = new mongoose.Schema({
 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+
   salonId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Salon',
@@ -12,4 +18,7 @@ const favoriteSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model('Favorite', favoriteSchema);
+module.exports = mongoose.model(
+  'Favorite',
+  favoriteSchema
+);

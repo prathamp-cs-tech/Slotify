@@ -1,82 +1,307 @@
 import { useState } from 'react';
+
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SignupScreen({ navigation, route }) {
+import API from '../services/api';
+
+import {
+  saveUserData,
+} from '../services/auth';
+
+import { COLORS } from '../constants/colors';
+
+export default function SignupScreen({
+  navigation,
+  route,
+}) {
+
   const { role } = route.params || {};
-  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const [passwordVisible,
+    setPasswordVisible] =
+      useState(false);
+
+  const [name,
+    setName] =
+      useState('');
+
+  const [email,
+    setEmail] =
+      useState('');
+
+  const [password,
+    setPassword] =
+      useState('');
+
+  const [loading,
+    setLoading] =
+      useState(false);
+
+  const handleSignup = async () => {
+
+    if (
+      !name ||
+      !email ||
+      !password
+    ) {
+
+      Alert.alert(
+        'Error',
+        'Please fill all fields'
+      );
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      const response =
+        await API.post(
+          '/auth/signup',
+          {
+            name,
+            email,
+            password,
+
+            role:
+              role === 'provider'
+                ? 'provider'
+                : 'customer',
+          }
+        );
+
+      console.log(
+        'SIGNUP RESPONSE:',
+        response.data
+      );
+
+      const token =
+        response.data.token;
+
+      const user =
+        response.data.user;
+
+      await saveUserData(
+        token,
+        user
+      );
+
+      if (
+        user.role ===
+        'provider'
+      ) {
+
+        navigation.replace(
+          'ProviderHome'
+        );
+
+      } else {
+
+        navigation.replace(
+          'Home'
+        );
+
+      }
+
+    } catch (error) {
+
+      console.log(
+        error.response?.data
+      );
+
+      Alert.alert(
+        'Signup Failed',
+        error.response?.data
+          ?.message ||
+          'Something went wrong'
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
   return (
+
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={
+        Platform.OS === 'ios'
+          ? 'padding'
+          : 'height'
+      }
     >
 
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.brand}>SLOTIFY</Text>
+
+        <Text style={styles.brand}>
+          SLOTIFY
+        </Text>
+
       </View>
 
-      {/* Card */}
+      {/* CARD */}
       <View style={styles.card}>
 
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.sub}>Sign up to continue</Text>
+        <Text style={styles.title}>
+          Create Account
+        </Text>
 
-        {/* Name */}
+        <Text style={styles.sub}>
+          Sign up to continue
+        </Text>
+
+        {/* NAME */}
         <View style={styles.inputBox}>
-          <Ionicons name="person-outline" size={18} color="#888" />
-          <TextInput placeholder="Full Name" style={styles.input} />
+
+          <Ionicons
+            name="person-outline"
+            size={18}
+            color="#888"
+          />
+
+          <TextInput
+            placeholder="Full Name"
+            placeholderTextColor="#999"
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+          />
+
         </View>
 
-        {/* Email */}
+        {/* EMAIL */}
         <View style={styles.inputBox}>
-          <Ionicons name="mail-outline" size={18} color="#888" />
-          <TextInput placeholder="Email" style={styles.input} />
+
+          <Ionicons
+            name="mail-outline"
+            size={18}
+            color="#888"
+          />
+
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#999"
+            style={styles.input}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+
         </View>
 
-        {/* Password */}
+        {/* PASSWORD */}
         <View style={styles.inputBox}>
-          <Ionicons name="lock-closed-outline" size={18} color="#888" />
+
+          <Ionicons
+            name="lock-closed-outline"
+            size={18}
+            color="#888"
+          />
+
           <TextInput
             placeholder="Password"
-            secureTextEntry={!passwordVisible}
+            placeholderTextColor="#999"
+            secureTextEntry={
+              !passwordVisible
+            }
             style={styles.input}
+            value={password}
+            onChangeText={setPassword}
           />
-          <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+
+          <TouchableOpacity
+            onPress={() =>
+              setPasswordVisible(
+                !passwordVisible
+              )
+            }
+          >
+
             <Ionicons
-              name={passwordVisible ? 'eye-outline' : 'eye-off-outline'}
+              name={
+                passwordVisible
+                  ? 'eye-outline'
+                  : 'eye-off-outline'
+              }
               size={18}
               color="#888"
             />
+
           </TouchableOpacity>
+
         </View>
 
-        {/* Signup Button */}
+        {/* SIGNUP BUTTON */}
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate('Login', { role })}
+          onPress={handleSignup}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>SIGN UP</Text>
+
+          <Text style={styles.buttonText}>
+
+            {loading
+              ? 'CREATING ACCOUNT...'
+              : 'SIGN UP'}
+
+          </Text>
+
         </TouchableOpacity>
 
-        {/* Back to Login */}
+        {/* LOGIN */}
         <View style={styles.row}>
-          <Text style={{ fontSize: 13 }}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login', { role })}>
-            <Text style={styles.link}>Login</Text>
+
+          <Text style={styles.rowText}>
+            Already have an account?
+          </Text>
+
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate(
+                'Login',
+                { role:role==='provider'?'provider':'costumer' }
+              )
+            }
+          >
+
+            <Text style={styles.link}>
+              {' '}Login
+            </Text>
+
           </TouchableOpacity>
+
         </View>
 
       </View>
+
     </KeyboardAvoidingView>
+
   );
+
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#9F8FEF',
@@ -97,7 +322,7 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 0.7,
-    backgroundColor: '#F3F0FF',
+    backgroundColor: COLORS.background,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
     padding: 25,
@@ -107,18 +332,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 5,
+    color: COLORS.text,
   },
 
   sub: {
     fontSize: 13,
-    color: '#777',
+    color: COLORS.gray,
     marginBottom: 20,
   },
 
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEBFF',
+    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
@@ -127,10 +353,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     marginLeft: 10,
+    color: COLORS.text,
   },
 
   button: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: COLORS.primary,
     borderRadius: 30,
     paddingVertical: 15,
     alignItems: 'center',
@@ -149,8 +376,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  rowText: {
+    fontSize: 13,
+    color: COLORS.gray,
+  },
+
   link: {
-    color: '#7C3AED',
+    color: COLORS.primary,
     fontWeight: '600',
   },
+
 });

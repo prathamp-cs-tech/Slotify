@@ -4,77 +4,113 @@ const router = express.Router();
 
 const Favorite = require('../models/Favorite');
 
-router.get('/', async (req, res) => {
+const {
+  protect,
+} = require('../middleware/authMiddleware');
 
-  try {
+router.get(
+  '/',
+  protect,
+  async (req, res) => {
 
-    const favorites = await Favorite.find()
-      .populate('salonId');
+    try {
 
-    res.json(favorites);
+      const favorites =
+        await Favorite.find({
 
-  } catch (error) {
+          userId: req.user._id,
 
-    res.status(500).json({
-      message: error.message,
-    });
+        }).populate('salonId');
 
-  }
+      res.json(favorites);
 
-});
+    } catch (error) {
 
-router.post('/', async (req, res) => {
-
-  try {
-
-    const existing = await Favorite.findOne({
-      salonId: req.body.salonId,
-    });
-
-    if (existing) {
-
-      return res.status(400).json({
-        message: 'Already favorited',
+      res.status(500).json({
+        message: error.message,
       });
 
     }
 
-    const favorite = await Favorite.create({
-      salonId: req.body.salonId,
-    });
+  }
+);
 
-    res.status(201).json(favorite);
+router.post(
+  '/',
+  protect,
+  async (req, res) => {
 
-  } catch (error) {
+    try {
 
-    res.status(500).json({
-      message: error.message,
-    });
+      const existing =
+        await Favorite.findOne({
+
+          userId: req.user._id,
+
+          salonId: req.body.salonId,
+
+        });
+
+      if (existing) {
+
+        return res.status(400).json({
+          message: 'Already favorited',
+        });
+
+      }
+
+      const favorite =
+        await Favorite.create({
+
+          userId: req.user._id,
+
+          salonId: req.body.salonId,
+
+        });
+
+      res.status(201).json(
+        favorite
+      );
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message,
+      });
+
+    }
 
   }
+);
 
-});
+router.delete(
+  '/:salonId',
+  protect,
+  async (req, res) => {
 
-router.delete('/:salonId', async (req, res) => {
+    try {
 
-  try {
+      await Favorite.findOneAndDelete({
 
-    await Favorite.findOneAndDelete({
-      salonId: req.params.salonId,
-    });
+        userId: req.user._id,
 
-    res.json({
-      message: 'Favorite removed',
-    });
+        salonId: req.params.salonId,
 
-  } catch (error) {
+      });
 
-    res.status(500).json({
-      message: error.message,
-    });
+      res.json({
+        message: 'Favorite removed',
+      });
+
+    } catch (error) {
+
+      res.status(500).json({
+        message: error.message,
+      });
+
+    }
 
   }
-
-});
+);
 
 module.exports = router;

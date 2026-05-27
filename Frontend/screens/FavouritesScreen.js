@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 import {
   View,
@@ -6,6 +6,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Animated,
+  Easing,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -28,10 +30,33 @@ export default function FavoritesScreen({ navigation }) {
 
   const [favoritesData, setFavoritesData] = useState([]);
 
+  const [loading, setLoading] = useState(true);
+
   const {
     favorites,
     toggleFav,
   } = useFavorites();
+
+  const slideAnim = useRef(
+    new Animated.Value(-120)
+  ).current;
+
+  useEffect(() => {
+
+    Animated.loop(
+
+      Animated.timing(slideAnim, {
+
+        toValue: 320,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+
+      })
+
+    ).start();
+
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,6 +65,8 @@ export default function FavoritesScreen({ navigation }) {
 
         try {
 
+          setLoading(true);
+
           const response = await API.get('/favorites');
 
           setFavoritesData(response.data);
@@ -47,6 +74,10 @@ export default function FavoritesScreen({ navigation }) {
         } catch (error) {
 
           console.log(error);
+
+        } finally {
+
+          setLoading(false);
 
         }
 
@@ -88,7 +119,30 @@ export default function FavoritesScreen({ navigation }) {
 
         </View>
 
-        {favoritesData.length === 0 ? (
+        {loading ? (
+
+          <View style={styles.loaderWrapper}>
+
+            <View style={styles.loaderTrack}>
+
+              <Animated.View
+                style={[
+                  styles.loaderBar,
+                  {
+                    transform: [
+                      {
+                        translateX: slideAnim,
+                      },
+                    ],
+                  },
+                ]}
+              />
+
+            </View>
+
+          </View>
+
+        ) : favoritesData.length === 0 ? (
 
           <View style={styles.empty}>
 
@@ -195,6 +249,26 @@ const styles = StyleSheet.create({
   row: {
     justifyContent: 'space-between',
     marginBottom: 14,
+  },
+
+  loaderWrapper: {
+    marginTop: 50,
+    alignItems: 'center',
+  },
+
+  loaderTrack: {
+    width: '85%',
+    height: 5,
+    backgroundColor: '#DDD6FE',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  loaderBar: {
+    width: 120,
+    height: 5,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
   },
 
   empty: {

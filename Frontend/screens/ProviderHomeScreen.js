@@ -1,10 +1,6 @@
-import { useState } from 'react';
-import { SafeAreaView } from 'react-native';
-
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -13,192 +9,414 @@ import {
 
 import {
   Ionicons,
-  MaterialCommunityIcons,
 } from '@expo/vector-icons';
 
-import MainLayout from '../components/MainLayout';
-import SalonCard from '../components/SalonCard';
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
-import { SALONS } from '../data/salons';
-import { CATEGORIES } from '../data/categories';
-export default function HomeScreen({ navigation }) {
+import {
+  Animated,
+  Easing,
+} from 'react-native';
 
-  const [favorites, setFavorites] = useState({});
+import ProviderLayout from '../components/ProviderLayout';
 
-  const toggleFav = (id) => {
-    setFavorites(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+import ProviderCard from '../components/ProviderCard';
+
+import API from '../services/api';
+
+import { COLORS } from '../constants/colors';
+
+export default function ProviderHomeScreen({
+  navigation,
+}) {
+
+  const [services, setServices] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const slideAnim = useRef(
+    new Animated.Value(-120)
+  ).current;
+
+  useEffect(() => {
+
+    const animation = Animated.loop(
+
+      Animated.timing(slideAnim, {
+
+        toValue: 320,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+
+      })
+
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+
+  }, []);
+
+  useEffect(() => {
+
+    const fetchServices = async () => {
+
+      try {
+
+        const response = await API.get('/salons');
+
+        setServices(response.data);
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    fetchServices();
+
+  }, []);
 
   return (
 
-    <MainLayout navigation={navigation}>
+    <ProviderLayout navigation={navigation} active="home">
 
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
 
         <StatusBar
           barStyle="dark-content"
-          backgroundColor="#F7F5FF"
+          backgroundColor={COLORS.background}
         />
 
-        {/* HEADER */}
         <View style={styles.header}>
 
-          <Text style={styles.brand}>
-            Provider Home
-          </Text>
+          <View>
+
+            <Text style={styles.brand}>
+              SLOTIFY
+            </Text>
+
+            <Text style={styles.subTitle}>
+              Provider Dashboard
+            </Text>
+
+          </View>
+
+          <TouchableOpacity
+            style={styles.notificationBtn}
+          >
+
+            <Ionicons
+              name="notifications-outline"
+              size={22}
+              color={COLORS.text}
+            />
+
+          </TouchableOpacity>
+
         </View>
 
-        {/* SEARCH */}
-        <View style={styles.searchBar}>
+        <View style={styles.statsRow}>
+
+          <View style={styles.statCard}>
+
+            <Text style={styles.statNumber}>
+              {services.length}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Services
+            </Text>
+
+          </View>
+
+          <View style={styles.statCard}>
+
+            <Text style={styles.statNumber}>
+              124
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Bookings
+            </Text>
+
+          </View>
+
+          <View style={styles.statCard}>
+
+            <Text style={styles.statNumber}>
+              4.8
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Rating
+            </Text>
+
+          </View>
+
+        </View>
+
+        <View style={styles.titleRow}>
+
+          <Text style={styles.sectionTitle}>
+            Your Services
+          </Text>
+
+        </View>
+        <TouchableOpacity
+          style={styles.addServiceBtn}
+          onPress={() =>
+            navigation.navigate('AddService')
+          }
+        >
 
           <Ionicons
-            name="search-outline"
-            size={18}
-            color="#999"
+            name="add"
+            size={20}
+            color={COLORS.white}
           />
 
-          <TextInput
-            placeholder="Search Salon, Specialist"
-            style={styles.searchInput}
-          />
+          <Text style={styles.addServiceText}>
+            Add New Service
+          </Text>
 
-        </View>
+        </TouchableOpacity>
 
-        {/* TITLE */}
-        <Text style={styles.sectionTitle}>
-          Your Salons
-        </Text>
-
-        {/* GRID */}
         <ScrollView
           showsVerticalScrollIndicator={false}
         >
 
-          <View style={styles.grid}>
+          {loading ? (
 
-            {SALONS.map((salon) => (
+            <View style={styles.loaderWrapper}>
 
-              <SalonCard
-                key={salon.id}
-                salon={salon}
-                navigation={navigation}
-                favorites={favorites}
-                toggleFav={toggleFav}
+              <View style={styles.loaderTrack}>
+
+                <Animated.View
+                  style={[
+                    styles.loaderBar,
+                    {
+                      transform: [
+                        {
+                          translateX: slideAnim,
+                        },
+                      ],
+                    },
+                  ]}
+                />
+
+              </View>
+
+            </View>
+
+          ) : services.length === 0 ? (
+
+            <View style={styles.emptyContainer}>
+
+              <Ionicons
+                name="cut-outline"
+                size={70}
+                color="#C4B5FD"
               />
 
-            ))}
+              <Text style={styles.emptyTitle}>
+                No Services Yet
+              </Text>
 
-          </View>
+              <Text style={styles.emptyText}>
+                Add your first salon service to start receiving bookings
+              </Text>
 
-          <View style={{ height: 100 }} />
+            </View>
+
+          ) : (
+
+            <View style={styles.grid}>
+
+              {services.map((salon) => (
+
+                <ProviderCard
+                  key={salon._id}
+                  salon={salon}
+                  navigation={navigation}
+                />
+
+              ))}
+
+            </View>
+
+          )}
+
+          <View style={{ height: 120 }} />
 
         </ScrollView>
 
-      </SafeAreaView>
+        
 
-    </MainLayout>
+      </View>
+
+    </ProviderLayout>
 
   );
+
 }
 
 const styles = StyleSheet.create({
 
   safe: {
     flex: 1,
-    backgroundColor: '#F7F5FF',
+    backgroundColor: COLORS.background,
+    paddingTop: 8,
   },
 
-  /* HEADER */
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 15,
-    marginBottom: 15,
+    marginTop: 10,
+    marginBottom: 20,
   },
 
   brand: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#6D28D9',
-    letterSpacing: 3,
+    color: COLORS.primary,
+    letterSpacing: 2,
   },
 
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 10,
+  subTitle: {
+    marginTop: 2,
+    fontSize: 13,
+    color: COLORS.gray,
+    fontWeight: '600',
   },
 
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+  notificationBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  /* SEARCH */
-  searchBar: {
-    flexDirection: 'row',
-    backgroundColor: '#EDEBFF',
-    marginHorizontal: 20,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  searchInput: {
-    marginLeft: 10,
-    flex: 1,
-  },
-
-  /* SECTION */
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginLeft: 20,
-    marginBottom: 10,
-  },
-
-  /* CATEGORIES */
-  categories: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 24,
   },
 
-  catItem: {
+  statCard: {
+    width: '31%',
+    backgroundColor: COLORS.card,
+    borderRadius: 18,
+    paddingVertical: 18,
     alignItems: 'center',
   },
 
-  catIcon: {
-    width: 55,
-    height: 55,
-    borderRadius: 14,
-    backgroundColor: '#EDE9FE',
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+
+  statLabel: {
+    marginTop: 5,
+    fontSize: 12,
+    color: COLORS.gray,
+    fontWeight: '600',
+  },
+
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+
+  grid: {
+    paddingHorizontal: 16,
+  },
+
+  loaderWrapper: {
+    marginTop: 50,
+    alignItems: 'center',
+  },
+
+  loaderTrack: {
+    width: '85%',
+    height: 5,
+    backgroundColor: '#DDD6FE',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  loaderBar: {
+    width: 120,
+    height: 5,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+  },
+
+  emptyContainer: {
+    marginTop: 100,
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+
+  emptyTitle: {
+    marginTop: 18,
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+
+  emptyText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.gray,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  addServiceBtn: {
+    marginHorizontal: 20,
+    marginBottom: 22,
+    backgroundColor: COLORS.primary,
+    borderRadius: 18,
+    paddingVertical: 16,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  catLabel: {
-    fontSize: 12,
-    marginTop: 6,
-    fontWeight: '600',
-    color: '#444',
-  },
-
-  /* GRID */
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 15,
-    justifyContent: 'space-between',
+  
+  addServiceText: {
+    marginLeft: 8,
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '700',
   },
 
 });

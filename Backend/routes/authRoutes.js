@@ -32,7 +32,9 @@ router.post('/signup', async (req, res) => {
     }
 
     const existingUser =
-      await User.findOne({ email });
+      await User.findOne({
+        email,
+      });
 
     if (existingUser) {
 
@@ -43,7 +45,10 @@ router.post('/signup', async (req, res) => {
     }
 
     const hashedPassword =
-      await bcrypt.hash(password, 10);
+      await bcrypt.hash(
+        password,
+        10
+      );
 
     const user =
       await User.create({
@@ -52,10 +57,13 @@ router.post('/signup', async (req, res) => {
 
         email,
 
-        password: hashedPassword,
+        password:
+          hashedPassword,
 
         role:
-          role || 'customer',
+          role === 'provider'
+            ? 'provider'
+            : 'customer',
 
       });
 
@@ -119,7 +127,9 @@ router.post('/login', async (req, res) => {
     }
 
     const user =
-      await User.findOne({ email });
+      await User.findOne({
+        email,
+      });
 
     if (!user) {
 

@@ -11,7 +11,8 @@ import {
   Alert,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons }
+from '@expo/vector-icons';
 
 import API from '../services/api';
 
@@ -19,14 +20,17 @@ import {
   saveUserData,
 } from '../services/auth';
 
-import { COLORS } from '../constants/colors';
+import {
+  COLORS,
+} from '../constants/colors';
 
 export default function LoginScreen({
   navigation,
   route,
 }) {
 
-  const { role } = route.params || {};
+  const { role } =
+    route.params || {};
 
   const [email, setEmail] =
     useState('');
@@ -42,74 +46,100 @@ export default function LoginScreen({
   const [loading, setLoading] =
     useState(false);
 
-  const handleLogin = async () => {
+    const handleLogin = async () => {
 
-    if (!email || !password) {
-
-      Alert.alert(
-        'Error',
-        'Please fill all fields'
-      );
-
-      return;
-
-    }
-
-    try {
-
-      setLoading(true);
-
-      const response =
-        await API.post(
-          '/auth/login',
-          {
-            email,
-            password,
-          }
+      try {
+    
+        console.log('BUTTON PRESSED');
+    
+        if (!email || !password) {
+    
+          Alert.alert(
+            'Error',
+            'Please fill all fields'
+          );
+    
+          return;
+    
+        }
+    
+        setLoading(true);
+    
+        console.log('SENDING REQUEST');
+    
+        const response =
+          await API.post(
+            '/auth/login',
+            {
+              email,
+              password,
+            }
+          );
+    
+        console.log(
+          'SUCCESS:',
+          response.data
         );
-
-      const token =
-        response.data.token;
-
-      const user =
-        response.data.user;
-
-      await saveUserData(
-        token,
-        user
-      );
-
-      if (
-        user.role === 'provider'
-      ) {
-
-        navigation.replace(
-          'ProviderHome'
+    
+        const token =
+          response.data.token;
+    
+        const user =
+          response.data.user;
+    
+        await saveUserData(
+          token,
+          user
         );
-
-      } else {
-
-        navigation.replace(
-          'Home'
+    
+        if (
+          user.role ===
+          'provider'
+        ) {
+    
+          navigation.replace(
+            'ProviderHome'
+          );
+    
+        } else {
+    
+          navigation.replace(
+            'Home'
+          );
+    
+        }
+    
+      } catch (error) {
+    
+        console.log(
+          'FULL ERROR:',
+          error
         );
-
+    
+        console.log(
+          'ERROR RESPONSE:',
+          error.response?.data
+        );
+    
+        console.log(
+          'ERROR MESSAGE:',
+          error.message
+        );
+    
+        Alert.alert(
+          'Login Failed',
+          error.response?.data?.message ||
+          error.message ||
+          'Something went wrong'
+        );
+    
+      } finally {
+    
+        setLoading(false);
+    
       }
-
-    } catch (error) {
-
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.message ||
-        'Something went wrong'
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
+    
+    };
 
   return (
 
@@ -261,11 +291,12 @@ export default function LoginScreen({
 
           <TouchableOpacity
             onPress={() =>
-              navigation.replace(
+              navigation.navigate(
                 'Signup',
                 {
                   role:
-                    role === 'provider'
+                    role ===
+                    'provider'
                       ? 'provider'
                       : 'customer',
                 }

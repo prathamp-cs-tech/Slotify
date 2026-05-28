@@ -37,12 +37,12 @@ router.put(
         user.email;
 
       user.phone =
-        req.body.phone ||
-        '';
+        req.body.phone ??
+        user.phone;
 
       user.location =
-        req.body.location ||
-        '';
+        req.body.location ??
+        user.location;
 
       const updatedUser =
         await user.save();

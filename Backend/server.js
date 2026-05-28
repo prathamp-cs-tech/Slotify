@@ -40,10 +40,16 @@ app.use(
     require('./routes/providerRoutes')
 );
 
-  app.use(
+app.use(
     '/api/favorites',
     require('./routes/favoriteRoutes')
 );
+
+app.use(
+      '/api/users',
+      require('./routes/userRoutes')
+);
+
 
 const PORT =
   process.env.PORT || 3001;

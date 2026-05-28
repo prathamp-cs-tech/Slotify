@@ -117,7 +117,7 @@ export default function SalonScreen({
         const response =
           await API.get(
 
-            `/salons/${salon._id}/service/${service._id}/slots?date=${date}`
+            `/salons/${salon._id}/service/${service._id}/slots?date=${bookingDate}`
 
           );
 

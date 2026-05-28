@@ -144,14 +144,23 @@ export default function EditProfileScreen({
 
     } catch (error) {
 
-      console.log(error);
+      // console.log(error);
 
-      Alert.alert(
-        'Update Failed',
-        error.response?.data
-          ?.message ||
-          'Something went wrong'
-      );
+      // Alert.alert(
+      //   'Update Failed',
+      //   error.response?.data
+      //     ?.message ||
+      //     'Something went wrong'
+      // );
+      console.log(error.response?.data);
+
+Alert.alert(
+  'Update Failed',
+  JSON.stringify(
+    error.response?.data ||
+    error.message
+  )
+);
 
     } finally {
 

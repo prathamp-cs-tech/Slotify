@@ -13,7 +13,7 @@ const {
 } = require('../middleware/authMiddleware');
 
 const DEFAULT_SLOTS = [
-
+  
   '10:00 am',
   '10:30 am',
   '11:00 am',
@@ -28,6 +28,42 @@ const DEFAULT_SLOTS = [
   '5:30 pm',
 
 ];
+
+const convertTo24Hour =
+  (time) => {
+
+    let [hourMinute, period] =
+      time.split(' ');
+
+    let [hours, minutes] =
+      hourMinute.split(':');
+
+    hours = parseInt(hours);
+
+    if (
+      period.toLowerCase() === 'pm' &&
+      hours !== 12
+    ) {
+
+      hours += 12;
+
+    }
+
+    if (
+      period.toLowerCase() === 'am' &&
+      hours === 12
+    ) {
+
+      hours = 0;
+
+    }
+
+    return {
+      hours,
+      minutes: parseInt(minutes),
+    };
+
+  };
 
 router.get('/', async (req, res) => {
 
@@ -318,14 +354,60 @@ router.get(
           booking => booking.bookingTime
         );
 
+      const now = new Date();
+
+      const selectedDateObj =
+        new Date(date);
+
       const availableSlots =
         DEFAULT_SLOTS.filter(
+          (slot) => {
 
-          slot =>
+            if (
+              blockedSlots.includes(slot) ||
+              bookedSlots.includes(slot)
+            ) {
 
-            !blockedSlots.includes(slot) &&
-            !bookedSlots.includes(slot)
+              return false;
 
+            }
+
+            const isToday =
+
+              now.toDateString() ===
+              selectedDateObj.toDateString();
+
+            if (!isToday) {
+
+              return true;
+
+            }
+
+            const {
+              hours,
+              minutes,
+            } = convertTo24Hour(slot);
+
+            const slotDateTime =
+              new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                hours,
+                minutes,
+                0,
+                0
+              );
+
+            const diffMs =
+              slotDateTime - now;
+
+            const diffHours =
+              diffMs / (1000 * 60 * 60);
+
+            return diffHours >= 1;
+
+          }
         );
 
       res.json({
@@ -337,155 +419,6 @@ router.get(
       });
 
     } catch (error) {
-
-      res.status(500).json({
-        message: error.message,
-      });
-
-    }
-
-  }
-);
-
-router.put(
-  '/provider/service/:serviceId/blocked-slots',
-  protect,
-  async (req, res) => {
-
-    try {
-
-      const {
-        serviceId,
-      } = req.params;
-
-      const {
-        date,
-        blockedSlots,
-      } = req.body;
-
-      const salon =
-        await Salon.findOne({
-          ownerId: req.user._id,
-        });
-
-      if (!salon) {
-
-        return res.status(404).json({
-          message: 'Salon not found',
-        });
-
-      }
-
-      const service =
-        salon.services.id(serviceId);
-
-      if (!service) {
-
-        return res.status(404).json({
-          message: 'Service not found',
-        });
-
-      }
-
-      const existingDate =
-        service.blockedSlots.find(
-          item => item.date === date
-        );
-
-      if (existingDate) {
-
-        existingDate.slots =
-          blockedSlots;
-
-      } else {
-
-        service.blockedSlots.push({
-
-          date,
-          slots: blockedSlots,
-
-        });
-
-      }
-
-      await salon.save();
-
-      res.json({
-        message: 'Blocked slots updated',
-      });
-
-    } catch (error) {
-
-      res.status(500).json({
-        message: error.message,
-      });
-
-    }
-
-  }
-);
-
-router.put(
-  '/debug/fix-categories',
-  async (req, res) => {
-
-    try {
-
-      const salons =
-        await Salon.find();
-
-      for (const salon of salons) {
-
-        salon.services =
-          salon.services.map(service => {
-
-            if (
-              service.category === 'Nails'
-            ) {
-
-              service.category = 'Makeup';
-
-            }
-
-            if (
-              service.category === 'Hair Coloring'
-            ) {
-
-              service.category = 'Hair';
-
-            }
-
-            if (
-              service.averageRating === undefined
-            ) {
-
-              service.averageRating = 0;
-
-            }
-
-            if (
-              service.totalRatings === undefined
-            ) {
-
-              service.totalRatings = 0;
-
-            }
-
-            return service;
-
-          });
-
-        await salon.save();
-
-      }
-
-      res.json({
-        message: 'Categories fixed',
-      });
-
-    } catch (error) {
-
-      console.log(error);
 
       res.status(500).json({
         message: error.message,

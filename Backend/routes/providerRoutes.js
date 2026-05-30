@@ -85,7 +85,7 @@ router.post(
         duration: Number(duration),
 
         image:
-          image || salon.image,
+          salon.image,
 
         isActive: true,
 
@@ -188,6 +188,57 @@ router.put(
   
           service,
   
+        });
+  
+      } catch (error) {
+  
+        console.log(error);
+  
+        res.status(500).json({
+          message: error.message,
+        });
+  
+      }
+  
+    }
+  );
+  router.put(
+    '/my-salon',
+    protect,
+    async (req, res) => {
+  
+      try {
+  
+        const {
+          name,
+          address,
+          image,
+          mapLink,
+        } = req.body;
+  
+        const salon =
+          await Salon.findOne({
+            ownerId: req.user._id,
+          });
+  
+        if (!salon) {
+  
+          return res.status(404).json({
+            message: 'Salon not found',
+          });
+  
+        }
+  
+        salon.name = name;
+        salon.address = address;
+        salon.image = image;
+        salon.mapLink = mapLink;
+  
+        await salon.save();
+  
+        res.json({
+          message:
+            'Salon updated successfully',
         });
   
       } catch (error) {

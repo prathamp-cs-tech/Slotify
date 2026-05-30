@@ -32,6 +32,7 @@ import {
   } from '../services/auth';
   
   import API from '../services/api';
+import ProviderLayout from '../components/ProviderLayout';
   
   export default function
   ProviderProfileScreen({
@@ -39,10 +40,6 @@ import {
     navigation,
   
   }) {
-  
-    const [notifications,
-      setNotifications] =
-        useState(true);
   
     const [user,
       setUser] =
@@ -70,7 +67,7 @@ import {
   
           const response =
             await API.get(
-              '/salons/provider/my-salon'
+              '/provider/my-salon'
             );
   
           setSalon(
@@ -98,7 +95,7 @@ import {
   
     return (
   
-      <MainLayout
+      <ProviderLayout
         navigation={navigation}
       >
   
@@ -168,7 +165,7 @@ import {
                 style={styles.row}
                 onPress={() =>
                   navigation.navigate(
-                    'ProviderAppointments'
+                    'ProviderBookings'
                   )
                 }
               >
@@ -301,109 +298,41 @@ import {
   
               </TouchableOpacity>
   
-              <View
-                style={styles.divider}
-              />
-  
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() =>
-                  navigation.navigate(
-                    'BlockedSlots'
-                  )
-                }
-              >
-  
-                <View
-                  style={
-                    styles.rowLeft
+              <View style={styles.divider} />
+
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() =>
+                    navigation.navigate(
+                      'ProviderNotifications'
+                    )
                   }
                 >
-  
+
+                  <View style={styles.rowLeft}>
+
+                    <Ionicons
+                      name="notifications-outline"
+                      size={20}
+                      color={COLORS.primary}
+                    />
+
+                    <Text style={styles.rowText}>
+                      Updates
+                    </Text>
+
+                  </View>
+
                   <Ionicons
-                    name="time-outline"
-                    size={20}
-                    color={
-                      COLORS.primary
-                    }
+                    name="chevron-forward"
+                    size={18}
+                    color={COLORS.lightGray}
                   />
-  
-                  <Text
-                    style={
-                      styles.rowText
-                    }
-                  >
-                    Block Slots
-                  </Text>
-  
-                </View>
-  
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={
-                    COLORS.lightGray
-                  }
-                />
-  
-              </TouchableOpacity>
-  
+
+                </TouchableOpacity>
             </View>
-  
-            {/* PREFERENCES */}
-            <View style={styles.card}>
-  
-              <Text style={styles.cardTitle}>
-                Preferences
-              </Text>
-  
-              <View style={styles.row}>
-  
-                <View
-                  style={
-                    styles.rowLeft
-                  }
-                >
-  
-                  <Ionicons
-                    name="notifications-outline"
-                    size={20}
-                    color={
-                      COLORS.primary
-                    }
-                  />
-  
-                  <Text
-                    style={
-                      styles.rowText
-                    }
-                  >
-                    Notifications
-                  </Text>
-  
-                </View>
-  
-                <Switch
-                  value={
-                    notifications
-                  }
-                  onValueChange={
-                    setNotifications
-                  }
-                  trackColor={{
-                    false: '#ccc',
-                    true: '#C4B5FD',
-                  }}
-                  thumbColor={
-                    notifications
-                      ? COLORS.primary
-                      : '#f4f3f4'
-                  }
-                />
-  
-              </View>
-  
-            </View>
+                  
+            
   
             {/* SUPPORT */}
             <View style={styles.card}>
@@ -461,6 +390,11 @@ import {
   
               <TouchableOpacity
                 style={styles.row}
+                onPress={() =>
+                  navigation.navigate(
+                    'Terms'
+                  )
+                }
               >
   
                 <View
@@ -526,7 +460,7 @@ import {
   
         </View>
   
-      </MainLayout>
+      </ProviderLayout>
   
     );
   

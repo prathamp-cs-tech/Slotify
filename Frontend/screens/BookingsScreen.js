@@ -127,6 +127,85 @@ export default function BookingsScreen({
 
     };
 
+  const convertTo24Hour =
+    (time) => {
+
+      let [hourMinute, period] =
+        time.split(' ');
+
+      let [hours, minutes] =
+        hourMinute.split(':');
+
+      hours = parseInt(hours);
+
+      if (
+        period.toLowerCase() === 'pm' &&
+        hours !== 12
+      ) {
+
+        hours += 12;
+
+      }
+
+      if (
+        period.toLowerCase() === 'am' &&
+        hours === 12
+      ) {
+
+        hours = 0;
+
+      }
+
+      return {
+        hours,
+        minutes:
+          parseInt(minutes),
+      };
+
+    };
+
+  const canCancelBooking =
+    (bookingDate, bookingTime) => {
+
+      const {
+        hours,
+        minutes,
+      } = convertTo24Hour(
+        bookingTime
+      );
+
+      const [year, month, day] =
+        bookingDate
+          .split('-')
+          .map(Number);
+
+      const bookingDateTime =
+        new Date(
+
+          year,
+          month - 1,
+          day,
+          hours,
+          minutes,
+          0,
+          0
+
+        );
+
+      const now =
+        new Date();
+
+      const difference =
+        bookingDateTime - now;
+
+      const differenceHours =
+        difference /
+        (1000 * 60 * 60);
+
+      return differenceHours >= 3;
+
+    };
+
   const submitRating =
     async (
       rating,
@@ -464,12 +543,34 @@ export default function BookingsScreen({
               textColor={
                 COLORS.danger
               }
+              disabled={
+                !canCancelBooking(
+                  item.bookingDate,
+                  item.bookingTime
+                )
+              }
               onPress={() =>
                 cancelBooking(
                   item._id
                 )
               }
             />
+
+            {!canCancelBooking(
+              item.bookingDate,
+              item.bookingTime
+            ) && (
+
+              <Text
+                style={
+                  styles.cancelWarning
+                }
+              >
+                Cannot cancel within
+                3 hours of slot time
+              </Text>
+
+            )}
 
           </>
 
@@ -487,142 +588,137 @@ export default function BookingsScreen({
       navigation={navigation}
     >
 
-      
+      <View style={styles.container}>
 
-        <View style={styles.container}>
+        <Text style={styles.header}>
+          My Bookings
+        </Text>
 
-          <Text style={styles.header}>
-            My Bookings
-          </Text>
+        <View style={styles.tabs}>
 
-          <View style={styles.tabs}>
+          {[
+            'upcoming',
+            'completed',
+            'cancelled',
+          ].map(tab => (
 
-            {[
-              'upcoming',
-              'completed',
-              'cancelled',
-            ].map(tab => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() =>
+                setActiveTab(tab)
+              }
+              style={[
 
-              <TouchableOpacity
-                key={tab}
-                onPress={() =>
-                  setActiveTab(tab)
-                }
+                styles.tab,
+
+                activeTab === tab &&
+                styles.activeTab,
+
+              ]}
+            >
+
+              <Text
                 style={[
 
-                  styles.tab,
+                  styles.tabText,
 
                   activeTab === tab &&
-                  styles.activeTab,
+                  styles.activeTabText,
 
                 ]}
               >
+                {tab}
+              </Text>
 
-                <Text
-                  style={[
+            </TouchableOpacity>
 
-                    styles.tabText,
-
-                    activeTab === tab &&
-                    styles.activeTabText,
-
-                  ]}
-                >
-                  {tab}
-                </Text>
-
-              </TouchableOpacity>
-
-            ))}
-
-          </View>
-
-          {loading && (
-
-            <View
-              style={
-                styles.loadingWrapper
-              }
-            >
-
-              <View
-                style={
-                  styles.loaderTrack
-                }
-              >
-
-                <Animated.View
-                  style={[
-
-                    styles.loaderBar,
-
-                    {
-                      transform: [
-                        {
-                          translateX:
-                            slideAnim,
-                        },
-                      ],
-                    },
-
-                  ]}
-                />
-
-              </View>
-
-            </View>
-
-          )}
-
-          {!loading &&
-            filtered.length === 0 && (
-
-            <Text
-              style={styles.emptyText}
-            >
-              No bookings found
-            </Text>
-
-          )}
-
-          {!loading && (
-
-            <FlatList
-
-              data={filtered}
-
-              keyExtractor={(item) =>
-                item._id
-              }
-
-              renderItem={renderItem}
-
-              keyboardShouldPersistTaps="handled"
-
-              showsVerticalScrollIndicator={false}
-
-              
-              nestedScrollEnabled
-
-              contentContainerStyle={{
-                paddingBottom: 120,
-              }}
-
-            />
-
-          )}
-
-          <SuccessModal
-            visible={showCancelPopup}
-            title="Booking Cancelled"
-            onClose={() =>
-              setShowCancelPopup(false)
-            }
-          />
+          ))}
 
         </View>
 
-      
+        {loading && (
+
+          <View
+            style={
+              styles.loadingWrapper
+            }
+          >
+
+            <View
+              style={
+                styles.loaderTrack
+              }
+            >
+
+              <Animated.View
+                style={[
+
+                  styles.loaderBar,
+
+                  {
+                    transform: [
+                      {
+                        translateX:
+                          slideAnim,
+                      },
+                    ],
+                  },
+
+                ]}
+              />
+
+            </View>
+
+          </View>
+
+        )}
+
+        {!loading &&
+          filtered.length === 0 && (
+
+          <Text
+            style={styles.emptyText}
+          >
+            No bookings found
+          </Text>
+
+        )}
+
+        {!loading && (
+
+          <FlatList
+
+            data={filtered}
+
+            keyExtractor={(item) =>
+              item._id
+            }
+
+            renderItem={renderItem}
+
+            keyboardShouldPersistTaps="handled"
+
+            showsVerticalScrollIndicator={false}
+
+            nestedScrollEnabled
+
+            contentContainerStyle={{
+              paddingBottom: 120,
+            }}
+
+          />
+
+        )}
+
+        <SuccessModal
+          visible={showCancelPopup}
+          title="Booking Cancelled"
+          onClose={() =>
+            setShowCancelPopup(false)
+          }
+        />
+
+      </View>
 
       <RatingModal
 
@@ -835,6 +931,14 @@ const styles = StyleSheet.create({
   ratedContainer: {
     marginTop: 16,
     alignItems: 'center',
+  },
+
+  cancelWarning: {
+    marginTop: 8,
+    color: COLORS.danger,
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
 });

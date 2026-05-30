@@ -46,100 +46,100 @@ export default function LoginScreen({
   const [loading, setLoading] =
     useState(false);
 
-    const handleLogin = async () => {
+  const handleLogin = async () => {
 
-      try {
-    
-        console.log('BUTTON PRESSED');
-    
-        if (!email || !password) {
-    
-          Alert.alert(
-            'Error',
-            'Please fill all fields'
-          );
-    
-          return;
-    
-        }
-    
-        setLoading(true);
-    
-        console.log('SENDING REQUEST');
-    
-        const response =
-          await API.post(
-            '/auth/login',
-            {
-              email,
-              password,
-            }
-          );
-    
-        console.log(
-          'SUCCESS:',
-          response.data
-        );
-    
-        const token =
-          response.data.token;
-    
-        const user =
-          response.data.user;
-    
-        await saveUserData(
-          token,
-          user
-        );
-    
-        if (
-          user.role ===
-          'provider'
-        ) {
-    
-          navigation.replace(
-            'ProviderHome'
-          );
-    
-        } else {
-    
-          navigation.replace(
-            'Home'
-          );
-    
-        }
-    
-      } catch (error) {
-    
-        console.log(
-          'FULL ERROR:',
-          error
-        );
-    
-        console.log(
-          'ERROR RESPONSE:',
-          error.response?.data
-        );
-    
-        console.log(
-          'ERROR MESSAGE:',
-          error.message
-        );
-    
+    try {
+
+      console.log('BUTTON PRESSED');
+
+      if (!email || !password) {
+
         Alert.alert(
-          'Login Failed',
-          error.response?.data?.message ||
-          error.message ||
-          'Something went wrong'
+          'Error',
+          'Please fill all fields'
         );
-    
-      } finally {
-    
-        setLoading(false);
-    
+
+        return;
+
       }
-    
-    };
+
+      setLoading(true);
+
+      console.log('SENDING REQUEST');
+
+      const response =
+        await API.post(
+          '/auth/login',
+          {
+            email,
+            password,
+          }
+        );
+
+      console.log(
+        'SUCCESS:',
+        response.data
+      );
+
+      const token =
+        response.data.token;
+
+      const user =
+        response.data.user;
+
+      await saveUserData(
+        token,
+        user
+      );
+
+      if (
+        user.role ===
+        'provider'
+      ) {
+
+        navigation.replace(
+          'ProviderStack'
+        );
+
+      } else {
+
+        navigation.replace(
+          'UserStack'
+        );
+
+      }
+
+    } catch (error) {
+
+      console.log(
+        'FULL ERROR:',
+        error
+      );
+
+      console.log(
+        'ERROR RESPONSE:',
+        error.response?.data
+      );
+
+      console.log(
+        'ERROR MESSAGE:',
+        error.message
+      );
+
+      Alert.alert(
+        'Login Failed',
+        error.response?.data?.message ||
+        error.message ||
+        'Something went wrong'
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
 
   return (
 
@@ -251,21 +251,7 @@ export default function LoginScreen({
 
         </View>
 
-        <TouchableOpacity
-          style={styles.forgotWrapper}
-          onPress={() =>
-            navigation.navigate(
-              'Forgot',
-              { role }
-            )
-          }
-        >
-
-          <Text style={styles.forgotText}>
-            Forgot password?
-          </Text>
-
-        </TouchableOpacity>
+        
 
         <TouchableOpacity
           style={styles.loginButton}

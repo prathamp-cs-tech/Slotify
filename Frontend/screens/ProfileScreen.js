@@ -213,16 +213,16 @@ export default function ProfileScreen({
               />
 
             </TouchableOpacity>
+            <View style={styles.divider} />
 
-          </View>
-
-          <View style={styles.card}>
-
-            <Text style={styles.cardTitle}>
-              Preferences
-            </Text>
-
-            <View style={styles.row}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() =>
+                navigation.navigate(
+                  'Notifications'
+                )
+              }
+            >
 
               <View style={styles.rowLeft}>
 
@@ -233,30 +233,24 @@ export default function ProfileScreen({
                 />
 
                 <Text style={styles.rowText}>
-                  Notifications
+                  Updates
                 </Text>
 
               </View>
 
-              <Switch
-                value={notifications}
-                onValueChange={
-                  setNotifications
-                }
-                trackColor={{
-                  false: '#ccc',
-                  true: '#C4B5FD',
-                }}
-                thumbColor={
-                  notifications
-                    ? COLORS.primary
-                    : '#f4f3f4'
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color={
+                  COLORS.lightGray
                 }
               />
 
-            </View>
+            </TouchableOpacity>
 
           </View>
+          
+
 
           <View style={styles.card}>
 

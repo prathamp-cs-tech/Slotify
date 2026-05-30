@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+import { useState } from 'react';
+
 import {
   Ionicons,
 } from '@expo/vector-icons';
@@ -24,6 +26,10 @@ export default function SalonCard({
   toggleFav,
 
 }) {
+
+  const [imageLoading,
+    setImageLoading] =
+      useState(true);
 
   const service =
     salon.serviceData;
@@ -55,14 +61,39 @@ export default function SalonCard({
       }
     >
 
-      <Image
-        source={{
-          uri:
-            service.image ||
-            salon.image,
-        }}
-        style={styles.image}
-      />
+      <View style={styles.imageContainer}>
+
+        {imageLoading && (
+
+          <View
+            style={styles.imageLoader}
+          />
+
+        )}
+
+        <Image
+
+          source={{
+            uri:
+              service.image ||
+              salon.image,
+          }}
+
+          style={styles.image}
+
+          resizeMode="cover"
+
+          onLoad={() =>
+            setImageLoading(false)
+          }
+
+          onError={() =>
+            setImageLoading(false)
+          }
+
+        />
+
+      </View>
 
       <TouchableOpacity
 
@@ -162,9 +193,23 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
+  imageContainer: {
+    position: 'relative',
+  },
+
   image: {
     width: '100%',
     height: 120,
+  },
+
+  imageLoader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#E5E7EB',
+    zIndex: 1,
   },
 
   favBtn: {

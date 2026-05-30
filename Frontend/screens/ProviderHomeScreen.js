@@ -149,21 +149,13 @@ export default function ProviderHomeScreen({
 
           </View>
 
-          <TouchableOpacity
-            style={
-              styles.notificationBtn
-            }
-          >
-
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={COLORS.text}
-            />
-
-          </TouchableOpacity>
+          
 
         </View>
+        <ScrollView
+          stickyHeaderIndices={[2]}
+          showsVerticalScrollIndicator={false}
+        >
 
         {salon && (
 
@@ -215,70 +207,15 @@ export default function ProviderHomeScreen({
 
           </View>
 
-          <View style={styles.statCard}>
-
-            <Text style={styles.statNumber}>
-
-              {services.length > 0
-
-                ? (
-                    services.reduce(
-
-                      (sum, service) =>
-
-                        sum +
-                        (service.averageRating || 0),
-
-                      0
-
-                    ) / services.length
-
-                  ).toFixed(1)
-
-                : '0.0'}
-
-            </Text>
-
-            <Text style={styles.statLabel}>
-              Rating
-            </Text>
-
-          </View>
-
+          
         </View>
 
-        <TouchableOpacity
-
-          style={styles.addServiceBtn}
-
-          onPress={() =>
-
-            navigation.navigate(
-              'AddService'
-            )
-
-          }
-        >
-
-          <Ionicons
-            name="add"
-            size={20}
-            color={COLORS.white}
-          />
-
-          <Text style={styles.addServiceText}>
-            Add New Service
+        
+        <View style={styles.stickyHeader}>
+          <Text style={styles.sectionTitle}>
+            Your Services
           </Text>
-
-        </TouchableOpacity>
-
-        <Text style={styles.sectionTitle}>
-          Your Services
-        </Text>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-        >
+        </View>
 
           {loading ? (
 
@@ -426,7 +363,7 @@ const styles = StyleSheet.create({
 
   salonCard: {
     backgroundColor:
-      COLORS.primary,
+      COLORS.card,
     marginHorizontal: 20,
     borderRadius: 20,
     padding: 20,
@@ -434,14 +371,14 @@ const styles = StyleSheet.create({
   },
 
   salonName: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontSize: 22,
     fontWeight: '800',
   },
 
   salonInfo: {
     marginTop: 5,
-    color: '#E9D5FF',
+    color: COLORS.primary,
     fontSize: 13,
   },
 
@@ -454,7 +391,7 @@ const styles = StyleSheet.create({
   },
 
   statCard: {
-    width: '31%',
+    width: '45%',
     backgroundColor:
       COLORS.card,
     borderRadius: 18,
@@ -473,25 +410,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     fontWeight: '600',
-  },
-
-  addServiceBtn: {
-    marginHorizontal: 20,
-    marginBottom: 22,
-    backgroundColor:
-      COLORS.primary,
-    borderRadius: 18,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  addServiceText: {
-    marginLeft: 8,
-    color: COLORS.white,
-    fontSize: 15,
-    fontWeight: '700',
   },
 
   sectionTitle: {
@@ -539,5 +457,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.text,
   },
-
+  stickyHeader: {
+    backgroundColor: COLORS.background,
+    paddingTop: 5,
+    paddingBottom: 10,
+    zIndex: 100,
+  },
 });

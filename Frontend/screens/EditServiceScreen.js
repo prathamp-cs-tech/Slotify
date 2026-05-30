@@ -273,19 +273,38 @@ import {
   
           <View style={styles.container}>
   
-            <View style={styles.topRow}>
-  
-              <Text style={styles.title}>
-                Edit Service
+          <View style={styles.topRow}>
+    
+            <Text style={styles.title}>
+              Edit Service
+            </Text>
+
+            <View style={styles.statusContainer}>
+
+              <Text style={styles.statusLabel}>
+
+                {available
+                  ? 'Active'
+                  : 'Inactive'}
+
               </Text>
-  
+
               <Switch
                 value={available}
-                onValueChange={
-                  setAvailable
+                onValueChange={setAvailable}
+                trackColor={{
+                  false: '#FECACA',
+                  true: '#BBF7D0',
+                }}
+                thumbColor={
+                  available
+                    ? '#10B981'
+                    : '#EF4444'
                 }
               />
-  
+
+            </View>
+
             </View>
   
             <Text style={styles.label}>
@@ -594,6 +613,17 @@ import {
   
     timeText: {
       fontWeight: '600',
+      color: COLORS.text,
+    },
+    statusContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    
+    statusLabel: {
+      marginRight: 8,
+      fontSize: 14,
+      fontWeight: '700',
       color: COLORS.text,
     },
   

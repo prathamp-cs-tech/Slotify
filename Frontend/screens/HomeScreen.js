@@ -103,7 +103,22 @@ export default function HomeScreen({
 
     if (!search.trim()) {
 
-      setFilteredCards(cards);
+      const sortedCards =
+        [...cards].sort(
+
+          (a, b) =>
+
+            b.serviceData
+              .averageRating -
+
+            a.serviceData
+              .averageRating
+
+        );
+
+      setFilteredCards(
+        sortedCards
+      );
 
       return;
 
@@ -134,7 +149,22 @@ export default function HomeScreen({
 
       );
 
-    setFilteredCards(filtered);
+    const sortedFiltered =
+      filtered.sort(
+
+        (a, b) =>
+
+          b.serviceData
+            .averageRating -
+
+          a.serviceData
+            .averageRating
+
+      );
+
+    setFilteredCards(
+      sortedFiltered
+    );
 
   }, [search, cards]);
 
@@ -176,10 +206,23 @@ export default function HomeScreen({
 
         });
 
-        setCards(flattened);
+        const sortedData =
+          flattened.sort(
+
+            (a, b) =>
+
+              b.serviceData
+                .averageRating -
+
+              a.serviceData
+                .averageRating
+
+          );
+
+        setCards(sortedData);
 
         setFilteredCards(
-          flattened
+          sortedData
         );
 
       } catch (error) {
@@ -235,6 +278,10 @@ export default function HomeScreen({
           </TouchableOpacity>
 
         </View>
+        <ScrollView
+          stickyHeaderIndices={[3]}
+          showsVerticalScrollIndicator={false}
+        >
 
         <View style={styles.searchBar}>
 
@@ -257,6 +304,7 @@ export default function HomeScreen({
           />
 
         </View>
+        
 
         <Text style={styles.sectionTitle}>
           Popular Categories
@@ -303,14 +351,13 @@ export default function HomeScreen({
           ))}
 
         </View>
+        
 
-        <Text style={styles.sectionTitle}>
-          Trending Services
-        </Text>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.stickyHeader}>
+          <Text style={styles.sectionTitle2}>
+            Services
+          </Text>
+        </View>
 
           {loading ? (
 
@@ -455,6 +502,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 20,
+    marginBottom: 20,
+    color: COLORS.text,
+  },
+  sectionTitle2: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 20,
     marginBottom: 10,
     color: COLORS.text,
   },
@@ -516,6 +570,12 @@ const styles = StyleSheet.create({
     backgroundColor:
       COLORS.primary,
     borderRadius: 10,
+  },
+  stickyHeader: {
+    backgroundColor: COLORS.background,
+    paddingTop: 5,
+    paddingBottom: 10,
+    zIndex: 100,
   },
 
 });

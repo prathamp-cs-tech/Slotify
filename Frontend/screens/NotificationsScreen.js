@@ -1,115 +1,419 @@
+// screens/NotificationsScreen.js
+
+import {
+  useState,
+  useCallback,
+} from 'react';
+
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 
-import { Ionicons } from '@expo/vector-icons';
+import {
+  Ionicons,
+} from '@expo/vector-icons';
+
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
 
 import MainLayout from '../components/MainLayout';
 
-const notifications = [
+import API from '../services/api';
 
-  {
-    id: '1',
-    title: 'Booking Confirmed',
-    message:
-      'Your appointment at The Barber Lounge is confirmed.',
-    time: '2 min ago',
-    icon: 'checkmark-done',
-    color: '#7C3AED',
-  },
+import {
+  COLORS,
+} from '../constants/colors';
 
-  {
-    id: '2',
-    title: 'Booking Reminder',
-    message:
-      'Your salon appointment starts tomorrow at 4:30 PM.',
-    time: '1 hr ago',
-    icon: 'calendar',
-    color: '#2563EB',
-  },
+export default function NotificationsScreen({
+  navigation,
+}) {
 
-  {
-    id: '3',
-    title: 'Special Offer',
-    message:
-      'Glow Studio is offering 20% off this weekend.',
-    time: '3 hrs ago',
-    icon: 'pricetag',
-    color: '#EA580C',
-  },
+  const [notifications,
+    setNotifications] =
+      useState([]);
 
-];
+  const [loading,
+    setLoading] =
+      useState(true);
 
-export default function NotificationsScreen({ navigation }) {
+  useFocusEffect(
 
-  const renderItem = ({ item }) => (
+    useCallback(() => {
 
-    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+      fetchNotifications();
 
-      <View
+    }, [])
+
+  );
+
+  const fetchNotifications =
+    async () => {
+
+      try {
+
+        setLoading(true);
+
+        const response =
+          await API.get(
+            '/notifications'
+          );
+
+        setNotifications(
+          response.data
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+  const markAsRead =
+    async (id) => {
+
+      try {
+
+        await API.put(
+          `/notifications/${id}/read`
+        );
+
+        setNotifications(prev =>
+
+          prev.map(item =>
+
+            item._id === id
+
+              ? {
+                  ...item,
+                  isRead: true,
+                }
+
+              : item
+
+          )
+
+        );
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+  const getIcon =
+    (type) => {
+
+      switch (type) {
+
+        case 'booking_confirmed':
+
+          return {
+            name:
+              'checkmark-done',
+            color:
+              '#7C3AED',
+          };
+
+        case 'booking_received_provider':
+
+          return {
+            name:
+              'calendar',
+            color:
+              '#2563EB',
+          };
+
+        case 'booking_cancelled_user':
+
+          return {
+            name:
+              'close-circle',
+            color:
+              '#DC2626',
+          };
+
+        case 'booking_cancelled_provider':
+
+          return {
+            name:
+              'alert-circle',
+            color:
+              '#EA580C',
+          };
+
+        default:
+
+          return {
+            name:
+              'notifications',
+            color:
+              COLORS.primary,
+          };
+
+      }
+
+    };
+
+  const formatTime =
+    (date) => {
+
+      const now =
+        new Date();
+
+      const created =
+        new Date(date);
+
+      const difference =
+        Math.floor(
+          (now - created) /
+          1000
+        );
+
+      if (
+        difference < 60
+      ) {
+
+        return 'Just now';
+
+      }
+
+      if (
+        difference < 3600
+      ) {
+
+        return `${Math.floor(
+          difference / 60
+        )} min ago`;
+
+      }
+
+      if (
+        difference < 86400
+      ) {
+
+        return `${Math.floor(
+          difference / 3600
+        )} hr ago`;
+
+      }
+
+      return `${Math.floor(
+        difference / 86400
+      )} day ago`;
+
+    };
+
+  const renderItem = ({
+    item,
+  }) => {
+
+    const icon =
+      getIcon(item.type);
+
+    return (
+
+      <TouchableOpacity
+
+        activeOpacity={0.8}
+
         style={[
-          styles.iconBox,
-          {
-            backgroundColor: item.color,
-          },
+
+          styles.card,
+
+          !item.isRead &&
+          styles.unreadCard,
+
         ]}
+
+        onPress={() =>
+          markAsRead(item._id)
+        }
       >
 
-        <Ionicons
-          name={item.icon}
-          size={24}
-          color="#fff"
-        />
+        <View
+          style={[
 
-      </View>
+            styles.iconBox,
 
-      <View style={styles.content}>
+            {
+              backgroundColor:
+                icon.color,
+            },
 
-        <View style={styles.topRow}>
+          ]}
+        >
 
-          <Text style={styles.title}>
-            {item.title}
-          </Text>
+          <Ionicons
+            name={icon.name}
+            size={24}
+            color="#fff"
+          />
 
-          <Text style={styles.time}>
-            {item.time}
+        </View>
+
+        <View style={styles.content}>
+
+          <View style={styles.topRow}>
+
+            <Text style={styles.title}>
+              {item.title}
+            </Text>
+
+            <Text style={styles.time}>
+              {formatTime(
+                item.createdAt
+              )}
+            </Text>
+
+          </View>
+
+          <Text style={styles.message}>
+            {item.message}
           </Text>
 
         </View>
 
-        <Text style={styles.message}>
-          {item.message}
-        </Text>
+      </TouchableOpacity>
 
-      </View>
+    );
 
-    </TouchableOpacity>
-
-  );
+  };
 
   return (
 
-    <MainLayout navigation={navigation}>
+    <MainLayout
+      navigation={navigation}
+    >
 
       <View style={styles.container}>
 
-        <Text style={styles.header}>
-          Notifications
-        </Text>
+        <View style={styles.headerRow}>
 
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 120,
-          }}
-        />
+          <Text style={styles.header}>
+            Updates
+          </Text>
+
+          {notifications.some(
+            item => !item.isRead
+          ) && (
+
+            <TouchableOpacity
+              onPress={async () => {
+
+                try {
+
+                  await API.put(
+                    '/notifications/read-all'
+                  );
+
+                  setNotifications(prev =>
+
+                    prev.map(item => ({
+
+                      ...item,
+
+                      isRead: true,
+
+                    }))
+
+                  );
+
+                } catch (error) {
+
+                  console.log(error);
+
+                }
+
+              }}
+            >
+
+              <Text
+                style={
+                  styles.markAll
+                }
+              >
+                Mark all read
+              </Text>
+
+            </TouchableOpacity>
+
+          )}
+
+        </View>
+
+        {loading ? (
+
+          <View style={styles.loader}>
+
+            <ActivityIndicator
+              size="large"
+              color={COLORS.primary}
+            />
+
+          </View>
+
+        ) : notifications.length === 0 ? (
+
+          <View style={styles.empty}>
+
+            <Ionicons
+              name="notifications-outline"
+              size={70}
+              color="#C4B5FD"
+            />
+
+            <Text
+              style={styles.emptyTitle}
+            >
+              No Updates Yet
+            </Text>
+
+            <Text
+              style={styles.emptyText}
+            >
+              Your booking updates
+              will appear here.
+            </Text>
+
+          </View>
+
+        ) : (
+
+          <FlatList
+
+            data={notifications}
+
+            keyExtractor={(item) =>
+              item._id
+            }
+
+            renderItem={renderItem}
+
+            showsVerticalScrollIndicator={
+              false
+            }
+
+            contentContainerStyle={{
+              paddingBottom: 120,
+            }}
+
+          />
+
+        )}
 
       </View>
 
@@ -123,34 +427,53 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
+    backgroundColor:
+      '#F3F0FF',
     paddingHorizontal: 20,
     paddingTop: 10,
   },
 
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent:
+      'space-between',
+    alignItems: 'center',
+    marginBottom: 22,
+  },
+
   header: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '900',
     color: '#111',
-    marginBottom: 24,
+  },
+
+  markAll: {
+    color: COLORS.primary,
+    fontWeight: '700',
+    fontSize: 13,
   },
 
   card: {
     backgroundColor: '#ECE7F8',
-    borderRadius: 24,
-    padding: 18,
+    borderRadius: 22,
+    padding: 16,
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 14,
     alignItems: 'flex-start',
   },
 
+  unreadCard: {
+    borderWidth: 2,
+    borderColor: '#C4B5FD',
+  },
+
   iconBox: {
-    width: 70,
-    height: 70,
-    borderRadius: 22,
+    width: 62,
+    height: 62,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
 
   content: {
@@ -159,7 +482,8 @@ const styles = StyleSheet.create({
 
   topRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:
+      'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
@@ -170,43 +494,46 @@ const styles = StyleSheet.create({
     color: '#111',
     flex: 1,
   },
-  
+
   message: {
     fontSize: 13,
     color: '#666',
     lineHeight: 22,
     fontWeight: '500',
   },
-  
+
   time: {
     fontSize: 12,
     color: '#666',
     marginLeft: 10,
   },
-  
-  card: {
-    backgroundColor: '#ECE7F8',
-    borderRadius: 22,
-    padding: 16,
-    flexDirection: 'row',
-    marginBottom: 14,
-    alignItems: 'flex-start',
-  },
-  
-  iconBox: {
-    width: 62,
-    height: 62,
-    borderRadius: 20,
+
+  loader: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
   },
-  
-  header: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#111',
-    marginBottom: 22,
+
+  empty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 120,
+  },
+
+  emptyTitle: {
+    marginTop: 18,
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+
+  emptyText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.gray,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 
 });

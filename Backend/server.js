@@ -50,6 +50,16 @@ app.use(
       require('./routes/userRoutes')
 );
 
+app.use(
+  '/api/notifications',
+  require('./routes/notificationRoutes')
+);
+
+app.use(
+  '/api/upload',
+  require('./routes/uploadRoutes')
+);
+
 
 const PORT =
   process.env.PORT || 3001;

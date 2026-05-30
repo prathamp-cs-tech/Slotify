@@ -1,6 +1,6 @@
 // screens/AddServiceScreen.js
 
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 
 import {
   View,
@@ -16,6 +16,9 @@ import {
 import {
   Ionicons,
 } from '@expo/vector-icons';
+
+import * as ImagePicker
+  from 'expo-image-picker';
 
 import ProviderLayout from '../components/ProviderLayout';
 
@@ -33,9 +36,67 @@ const CATEGORIES = [
   'Spa',
 ];
 
+
 export default function AddServiceScreen({
   navigation,
 }) {
+  useEffect(() => {
+
+    fetchSalon();
+  
+  }, []);
+  
+  const fetchSalon =
+    async () => {
+  
+      try {
+  
+        const response =
+          await API.get(
+            '/provider/my-salon'
+          );
+  
+        setSalon(
+          response.data
+        );
+  
+      } catch (error) {
+  
+        console.log(error);
+  
+      }
+  
+  };
+  const pickImage =
+  async () => {
+
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+
+        mediaTypes:
+          ImagePicker.MediaTypeOptions.Images,
+
+        allowsEditing: true,
+
+        quality: 0.8,
+
+      });
+
+    if (
+      result.canceled
+    ) return;
+
+    uploadImage(
+      result.assets[0].uri
+    );
+
+  };
+  const [image, setImage] =
+  useState('');
+
+  const [uploading,
+  setUploading] =
+  useState(false);
 
   const [name, setName] =
     useState('');
@@ -48,12 +109,8 @@ export default function AddServiceScreen({
 
   const [duration, setDuration] =
     useState('');
-
-  const [image, setImage] =
-    useState(
-      'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f'
-    );
-
+  const [salon, setSalon] =
+    useState(null);
   const [loading, setLoading] =
     useState(false);
 
@@ -88,7 +145,8 @@ export default function AddServiceScreen({
               Number(price),
             duration:
               Number(duration),
-            image,
+            image:
+              image||salon.image,
           }
         );
 
@@ -117,6 +175,64 @@ export default function AddServiceScreen({
       }
 
     };
+    const uploadImage =
+  async (uri) => {
+
+    try {
+
+      setUploading(true);
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        'image',
+        {
+          uri,
+          type: 'image/jpeg',
+          name: 'service.jpg',
+        }
+      );
+
+      const response =
+        await API.post(
+          '/upload',
+          formData,
+          {
+            headers: {
+              'Content-Type':
+                'multipart/form-data',
+            },
+          }
+        );
+        console.log(
+
+          'UPLOAD RESPONSE:',
+        
+          response.data
+        
+        );
+
+      setImage(
+        response.data.image
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        'Error',
+        'Image upload failed'
+      );
+
+    } finally {
+
+      setUploading(false);
+
+    }
+
+  };
 
   return (
 
@@ -134,9 +250,36 @@ export default function AddServiceScreen({
         </Text>
 
         <Image
-          source={{ uri: image }}
+          source={{
+            uri:
+              image ||
+              salon?.image,
+          }}
           style={styles.preview}
         />
+        <TouchableOpacity
+          style={styles.imageBtn}
+          onPress={pickImage}
+          disabled={uploading}
+        >
+
+          <Ionicons
+            name="image-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+
+          <Text style={styles.imageBtnText}>
+            {
+              uploading
+                ? 'Uploading...'
+                : image
+                ? 'Change Service Image'
+                : 'Choose Service Image'
+            }
+          </Text>
+
+        </TouchableOpacity>
 
         <Text style={styles.label}>
           Service Name
@@ -245,33 +388,20 @@ export default function AddServiceScreen({
 
         </View>
 
-        <Text style={styles.label}>
-          Image URL
-        </Text>
-
-        <View style={styles.inputBox}>
-
-          <Ionicons
-            name="image-outline"
-            size={18}
-            color="#777"
-          />
-
-          <TextInput
-            style={styles.input}
-            value={image}
-            onChangeText={setImage}
-          />
-
-        </View>
 
         <PrimaryButton
           title={
-            loading
+            uploading
+              ? 'Uploading Image...'
+              : loading
               ? 'ADDING...'
               : 'Add Service'
           }
           onPress={handleAddService}
+          disabled={
+            uploading ||
+            loading
+          }
         />
 
         <View
@@ -361,6 +491,22 @@ const styles = StyleSheet.create({
 
   activeCategoryText: {
     color: COLORS.white,
+  },
+  imageBtn: {
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  imageBtnText: {
+    color: COLORS.primary,
+    fontWeight: '700',
+    marginLeft: 8,
   },
 
 });

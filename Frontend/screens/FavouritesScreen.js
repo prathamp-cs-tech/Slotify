@@ -1,5 +1,3 @@
-// screens/FavoritesScreen.js
-
 import React, {
   useState,
   useCallback,
@@ -15,6 +13,7 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
 
 import {
@@ -29,8 +28,6 @@ import MainLayout from '../components/MainLayout';
 
 import SalonCard from '../components/SalonCard';
 
-import FilterModal from '../components/FilterModal';
-
 import API from '../services/api';
 
 import {
@@ -43,13 +40,21 @@ export default function FavoritesScreen({
   navigation,
 }) {
 
-  const [showFilters,
-    setShowFilters] =
-      useState(false);
-
   const [favoritesData,
     setFavoritesData] =
       useState([]);
+
+  const [filteredFavorites,
+    setFilteredFavorites] =
+      useState([]);
+
+  const [selectedCategory,
+    setSelectedCategory] =
+      useState('All');
+
+  const [selectedSort,
+    setSelectedSort] =
+      useState('');
 
   const [loading,
     setLoading] =
@@ -61,10 +66,43 @@ export default function FavoritesScreen({
   } = useFavorites();
 
   const slideAnim = useRef(
-
     new Animated.Value(-120)
-
   ).current;
+
+  const categories = [
+
+    'All',
+    'Hair',
+    'Beard',
+    'Facial',
+    'Makeup',
+    'Spa',
+
+  ];
+
+  const sortOptions = [
+
+    {
+      label: 'Rating ↑',
+      value: 'ratingHigh',
+    },
+
+    {
+      label: 'Rating ↓',
+      value: 'ratingLow',
+    },
+
+    {
+      label: 'Price ↑',
+      value: 'priceLow',
+    },
+
+    {
+      label: 'Price ↓',
+      value: 'priceHigh',
+    },
+
+  ];
 
   useEffect(() => {
 
@@ -95,6 +133,112 @@ export default function FavoritesScreen({
     }, [favorites])
 
   );
+
+  useEffect(() => {
+
+    let updated =
+      [...favoritesData];
+
+    if (
+      selectedCategory !== 'All'
+    ) {
+
+      updated =
+        updated.filter(
+
+          item =>
+
+            item.serviceData
+              .category ===
+            selectedCategory
+
+        );
+
+    }
+
+    if (
+      selectedSort ===
+      'ratingHigh'
+    ) {
+
+      updated.sort(
+
+        (a, b) =>
+
+          b.serviceData
+            .averageRating -
+
+          a.serviceData
+            .averageRating
+
+      );
+
+    }
+
+    if (
+      selectedSort ===
+      'ratingLow'
+    ) {
+
+      updated.sort(
+
+        (a, b) =>
+
+          a.serviceData
+            .averageRating -
+
+          b.serviceData
+            .averageRating
+
+      );
+
+    }
+
+    if (
+      selectedSort ===
+      'priceLow'
+    ) {
+
+      updated.sort(
+
+        (a, b) =>
+
+          a.serviceData.price -
+
+          b.serviceData.price
+
+      );
+
+    }
+
+    if (
+      selectedSort ===
+      'priceHigh'
+    ) {
+
+      updated.sort(
+
+        (a, b) =>
+
+          b.serviceData.price -
+
+          a.serviceData.price
+
+      );
+
+    }
+
+    setFilteredFavorites(
+      updated
+    );
+
+  }, [
+
+    favoritesData,
+    selectedCategory,
+    selectedSort,
+
+  ]);
 
   const fetchFavorites =
     async () => {
@@ -144,6 +288,17 @@ export default function FavoritesScreen({
 
     };
 
+  const clearFilters =
+    () => {
+
+      setSelectedCategory(
+        'All'
+      );
+
+      setSelectedSort('');
+
+    };
+
   return (
 
     <MainLayout
@@ -152,36 +307,150 @@ export default function FavoritesScreen({
 
       <View style={styles.container}>
 
-        <View style={styles.topRow}>
+        <Text style={styles.header}>
+          Favorites
+        </Text>
 
-          <Text style={styles.header}>
-            Favorites
-          </Text>
+        {!loading && (
 
-          <TouchableOpacity
-
-            style={styles.filterBtn}
-
-            onPress={() =>
-              setShowFilters(true)
+          <View
+            style={
+              styles.filtersContainer
             }
           >
 
-            <Ionicons
-              name="options-outline"
-              size={18}
-              color={COLORS.primary}
-            />
-
-            <Text
-              style={styles.filterText}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.categoryRow
+              }
             >
-              Filters
-            </Text>
 
-          </TouchableOpacity>
+              {categories.map(
+                (item) => (
 
-        </View>
+                  <TouchableOpacity
+
+                    key={item}
+
+                    style={[
+
+                      styles.chip,
+
+                      selectedCategory ===
+                        item &&
+
+                        styles.activeChip,
+
+                    ]}
+
+                    onPress={() =>
+                      setSelectedCategory(
+                        item
+                      )
+                    }
+                  >
+
+                    <Text
+                      style={[
+
+                        styles.chipText,
+
+                        selectedCategory ===
+                          item &&
+
+                          styles.activeChipText,
+
+                      ]}
+                    >
+                      {item}
+                    </Text>
+
+                  </TouchableOpacity>
+
+                )
+              )}
+
+            </ScrollView>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.sortRow
+              }
+            >
+
+              {sortOptions.map(
+                (item) => (
+
+                  <TouchableOpacity
+
+                    key={item.value}
+
+                    style={[
+
+                      styles.sortChip,
+
+                      selectedSort ===
+                        item.value &&
+
+                        styles.activeSortChip,
+
+                    ]}
+
+                    onPress={() =>
+                      setSelectedSort(
+                        item.value
+                      )
+                    }
+                  >
+
+                    <Text
+                      style={[
+
+                        styles.sortText,
+
+                        selectedSort ===
+                          item.value &&
+
+                          styles.activeSortText,
+
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+
+                  </TouchableOpacity>
+
+                )
+              )}
+
+              <TouchableOpacity
+                style={styles.clearChip}
+                onPress={
+                  clearFilters
+                }
+              >
+
+                <Text
+                  style={styles.clearText}
+                >
+                  Clear
+                </Text>
+
+              </TouchableOpacity>
+
+            </ScrollView>
+
+          </View>
+
+        )}
 
         {loading ? (
 
@@ -218,7 +487,7 @@ export default function FavoritesScreen({
 
           </View>
 
-        ) : favoritesData.length === 0 ? (
+        ) : filteredFavorites.length === 0 ? (
 
           <View style={styles.empty}>
 
@@ -231,14 +500,13 @@ export default function FavoritesScreen({
             <Text
               style={styles.emptyTitle}
             >
-              No Favorites Yet
+              No Favorites Found
             </Text>
 
             <Text
               style={styles.emptyText}
             >
-              Save services you like
-              for quick access.
+              Try changing filters.
             </Text>
 
           </View>
@@ -247,7 +515,7 @@ export default function FavoritesScreen({
 
           <FlatList
 
-            data={favoritesData}
+            data={filteredFavorites}
 
             renderItem={({ item }) => (
 
@@ -290,21 +558,6 @@ export default function FavoritesScreen({
 
         )}
 
-        <FilterModal
-          visible={showFilters}
-          onClose={() =>
-            setShowFilters(false)
-          }
-          checkedOption=""
-          options={[
-            'Hair',
-            'Beard',
-            'Facial',
-            'Makeup',
-            'Spa',
-          ]}
-        />
-
       </View>
 
     </MainLayout>
@@ -323,41 +576,104 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
 
-  topRow: {
-    flexDirection: 'row',
-    justifyContent:
-      'space-between',
-    alignItems: 'center',
-    marginBottom: 22,
-  },
-
   header: {
     fontSize: 28,
     fontWeight: '900',
     color: COLORS.text,
+    marginBottom: 20,
   },
 
-  filterBtn: {
-    flexDirection: 'row',
+  filtersContainer: {
+    height: 110,
+    marginBottom: 10,
+  },
+
+  categoryRow: {
+    height: 50,
     alignItems: 'center',
+    paddingRight: 20,
+  },
+
+  sortRow: {
+    height: 50,
+    alignItems: 'center',
+    paddingRight: 20,
+    marginTop: 10,
+  },
+
+  chip: {
     backgroundColor:
       COLORS.card,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 14,
+    paddingHorizontal: 20,
+    height: 42,
+    borderRadius: 999,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  filterText: {
-    marginLeft: 6,
-    color: COLORS.primary,
-    fontSize: 12,
+  activeChip: {
+    backgroundColor:
+      COLORS.primary,
+  },
+
+  chipText: {
+    fontSize: 14,
     fontWeight: '700',
+    color: COLORS.text,
+  },
+
+  activeChipText: {
+    color: COLORS.white,
+  },
+
+  sortChip: {
+    backgroundColor:
+      COLORS.card,
+    paddingHorizontal: 20,
+    height: 42,
+    borderRadius: 999,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  activeSortChip: {
+    backgroundColor:
+      COLORS.primary,
+  },
+
+  sortText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+
+  activeSortText: {
+    color: COLORS.white,
+  },
+
+  clearChip: {
+    backgroundColor:
+      '#FEE2E2',
+    paddingHorizontal: 20,
+    height: 42,
+    borderRadius: 999,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  clearText: {
+    color: '#DC2626',
+    fontWeight: '700',
+    fontSize: 14,
   },
 
   row: {
     justifyContent:
       'space-between',
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
   loaderWrapper: {
@@ -400,8 +716,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.gray,
     marginTop: 5,
-    textAlign: 'center',
-    paddingHorizontal: 40,
   },
 
 });

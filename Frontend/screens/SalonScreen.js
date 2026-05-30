@@ -85,25 +85,26 @@ export default function SalonScreen({
     fetchSlots();
 
   }, [selectedDate]);
+
   const formatLocalDate =
-  (date) => {
+    (date) => {
 
-    const year =
-      date.getFullYear();
+      const year =
+        date.getFullYear();
 
-    const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, '0');
+      const month =
+        String(
+          date.getMonth() + 1
+        ).padStart(2, '0');
 
-    const day =
-      String(
-        date.getDate()
-      ).padStart(2, '0');
+      const day =
+        String(
+          date.getDate()
+        ).padStart(2, '0');
 
-    return `${year}-${month}-${day}`;
+      return `${year}-${month}-${day}`;
 
-  };
+    };
 
   const fetchSlots =
     async () => {
@@ -111,9 +112,10 @@ export default function SalonScreen({
       try {
 
         const bookingDate =
-        formatLocalDate(
-          selectedDate
-        );
+          formatLocalDate(
+            selectedDate
+          );
+
         const response =
           await API.get(
 
@@ -180,9 +182,9 @@ export default function SalonScreen({
         setLoading(true);
 
         const bookingDate =
-        formatLocalDate(
-          selectedDate
-        );
+          formatLocalDate(
+            selectedDate
+          );
 
         await API.post(
           '/bookings',
@@ -307,7 +309,8 @@ export default function SalonScreen({
             }
             onPress={() =>
               Linking.openURL(
-                'https://maps.google.com/?q=BMS+College+of+Engineering+Bangalore'
+                salon.mapLink ||
+                'https://maps.google.com'
               )
             }
           >
@@ -393,7 +396,7 @@ export default function SalonScreen({
 
             </View>
 
-            )}
+          )}
 
           <Text style={styles.section}>
             Available Slots
@@ -418,6 +421,9 @@ export default function SalonScreen({
                   slot
                 );
 
+              const isDisabled =
+                !isAvailable;
+
               return (
 
                 <TouchableOpacity
@@ -425,7 +431,7 @@ export default function SalonScreen({
                   key={slot}
 
                   disabled={
-                    !isAvailable
+                    isDisabled
                   }
 
                   style={[
@@ -441,6 +447,9 @@ export default function SalonScreen({
 
                     isBlocked &&
                       styles.blockedSlot,
+
+                    isDisabled &&
+                      styles.disabledSlot,
 
                   ]}
 
@@ -459,6 +468,9 @@ export default function SalonScreen({
                       selectedTime ===
                         slot &&
                         styles.activeTimeText,
+
+                      isDisabled &&
+                        styles.disabledText,
 
                     ]}
                   >
@@ -698,6 +710,14 @@ const styles = StyleSheet.create({
       '#FCA5A5',
   },
 
+  disabledSlot: {
+    opacity: 0.45,
+  },
+
+  disabledText: {
+    color: '#6B7280',
+  },
+
   timeText: {
     fontWeight: '600',
     color: COLORS.text,
@@ -720,6 +740,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     marginRight: 6,
   },
+
   pickerWrapper: {
     alignItems: 'center',
     backgroundColor: COLORS.white,
@@ -727,7 +748,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 20,
   },
-  
+
   doneBtn: {
     marginTop: 10,
     backgroundColor: COLORS.primary,
@@ -735,7 +756,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
   },
-  
+
   doneText: {
     color: COLORS.white,
     fontWeight: '700',
